@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board.dart';
 import '../models/board_item.dart';
 import '../state/board_provider.dart';
+import '../services/image_service.dart';
 
 // Provider for the currently selected board (set via .family or override)
 // For simplicity, we use a StateProvider here that holds the ID.
@@ -21,21 +22,36 @@ final activeBoardProvider = Provider<Board?>((ref) {
   }
 });
 
-class CanvasScreen extends ConsumerWidget {
+class CanvasScreen extends ConsumerStatefulWidget {
   final String boardId;
 
   const CanvasScreen({super.key, required this.boardId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // We set the ID initially (once in the frame callback or better: we rely on the parameter)
-    // Since we are in the build, it is better to use the provider directly or separate the logic.
-    // Here is a clean approach: We filter the list directly.
+  ConsumerState<CanvasScreen> createState() => _CanvasScreenState();
+}
 
+class _CanvasScreenState extends ConsumerState<CanvasScreen> {
+  late TransformationController _transformationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _transformationController = TransformationController();
+  }
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final board = ref
         .watch(boardListProvider)
         .firstWhere(
-          (b) => b.id == boardId,
+          (b) => b.id == widget.boardId,
           orElse: () => Board(name: 'Error', id: 'error'), // Fallback
         );
 
@@ -47,43 +63,100 @@ class CanvasScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      body: InteractiveViewer(
-        boundaryMargin: const EdgeInsets.all(double.infinity),
-        minScale: 0.1,
-        maxScale: 4.0,
-        child: Container(
-          width: 5000, // Virtual Canvas Size
-          height: 5000,
-          color: const Color(0xFF222222), // Dark background for Canvas
-          child: Stack(
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'add_image',
+        onPressed: () => _pickAndAddImage(context, ref, board),
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.grey[800],
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Center the canvas initially
+          if (_transformationController.value.isIdentity()) {
+            final viewportWidth = constraints.maxWidth;
+            final viewportHeight = constraints.maxHeight;
+            final canvasSize = 7000.0;
+
+            final x = -canvasSize / 2 + viewportWidth / 2;
+            final y = -canvasSize / 2 + viewportHeight / 2;
+
+            _transformationController.value = Matrix4.identity()
+              ..translate(x, y);
+          }
+
+          return Stack(
             children: [
-              // Center Marker (for orientation)
-              const Center(
-                child: Icon(Icons.add, color: Colors.white10, size: 50),
+              // Static Background with Grid
+              Positioned.fill(
+                child: Container(
+                  color: const Color.fromARGB(255, 30, 30, 30),
+                  child: CustomPaint(painter: _GridPainter()),
+                ),
               ),
+              // Pannable Area
+              InteractiveViewer(
+                transformationController: _transformationController,
+                // Limit the panning area so it's not infinite
+                boundaryMargin: const EdgeInsets.all(500),
+                minScale: 0.1,
+                maxScale: 4.0,
+                constrained: false, // Important for infinite canvas feeling
+                child: Container(
+                  width: 7000,
+                  height: 7000,
+                  // Transparent so we see the static background
+                  color: Colors.transparent,
+                  child: Stack(
+                    children: [
+                      // The Items
+                      ...board.items.map(
+                        (item) => _CanvasItem(
+                          item: item,
+                          onUpdate: (updatedItem) {
+                            final newItems = board.items.map((i) {
+                              return i.id == updatedItem.id ? updatedItem : i;
+                            }).toList();
 
-              // The Items
-              ...board.items.map(
-                (item) => _CanvasItem(
-                  item: item,
-                  onUpdate: (updatedItem) {
-                    // Update Logic: We build a new item list
-                    final newItems = board.items.map((i) {
-                      return i.id == updatedItem.id ? updatedItem : i;
-                    }).toList();
-
-                    // And save the new board
-                    ref
-                        .read(boardListProvider.notifier)
-                        .updateBoard(board.copyWith(items: newItems));
-                  },
+                            ref
+                                .read(boardListProvider.notifier)
+                                .updateBoard(board.copyWith(items: newItems));
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
+  }
+
+  Future<void> _pickAndAddImage(
+    BuildContext context,
+    WidgetRef ref,
+    Board board,
+  ) async {
+    try {
+      final imageService = ImageService();
+      final newItems = await imageService.pickAndProcessImages();
+
+      if (newItems.isNotEmpty) {
+        final updatedItems = List<BoardItem>.from(board.items)
+          ..addAll(newItems);
+        ref
+            .read(boardListProvider.notifier)
+            .updateBoard(board.copyWith(items: updatedItems));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
   }
 }
 
@@ -96,8 +169,8 @@ class _CanvasItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: 2500 + item.x, // 2500 is the center of our 5000x5000 Canvas
-      top: 2500 + item.y,
+      left: 3500 + item.x, // 2500 is the center of our 5000x5000 Canvas
+      top: 3500 + item.y,
       child: Transform.rotate(
         angle: item.rotation,
         child: GestureDetector(
@@ -113,10 +186,14 @@ class _CanvasItem extends StatelessWidget {
             width: item.width * item.scale,
             height: item.height * item.scale,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.blueAccent, width: 2),
+              border: Border.all(color: Colors.blueAccent, width: 3),
+              borderRadius: BorderRadius.circular(21),
               color: Colors.white, // Placeholder Color
             ),
-            child: _buildImageContent(),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: _buildImageContent(),
+            ),
           ),
         ),
       ),
@@ -134,4 +211,27 @@ class _CanvasItem extends StatelessWidget {
       return const Center(child: Icon(Icons.broken_image, color: Colors.red));
     }
   }
+}
+
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey.withOpacity(0.1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    const step = 22.0;
+
+    for (double x = 0; x <= size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+
+    for (double y = 0; y <= size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
