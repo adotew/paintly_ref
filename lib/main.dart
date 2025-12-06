@@ -12,7 +12,7 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Wir warten hier auf die Initialisierung von Hive
+    // We wait here for Hive initialization
     final initStatus = ref.watch(initializationProvider);
 
     return MaterialApp(
@@ -20,15 +20,14 @@ class MainApp extends ConsumerWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blueGrey,
-        brightness:
-            Brightness.dark, // Moodboard-Apps sehen dunkel oft besser aus
+        brightness: Brightness.dark, // Moodboard apps often look better dark
       ),
       home: initStatus.when(
         data: (_) => const BoardOverviewScreen(),
         loading: () =>
             const Scaffold(body: Center(child: CircularProgressIndicator())),
         error: (err, stack) =>
-            Scaffold(body: Center(child: Text('Fehler beim Starten: $err'))),
+            Scaffold(body: Center(child: Text('Error starting app: $err'))),
       ),
     );
   }
