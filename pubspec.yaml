@@ -9,6 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  hive: ^2.2.3
+  riverpod: ^3.0.3
+  super_drag_and_drop: ^0.9.1
+  photo_manager: ^3.8.3
 
 dev_dependencies:
   flutter_test:
