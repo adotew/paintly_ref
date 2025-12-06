@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/board_provider.dart';
 import '../models/board.dart';
+import 'canvas_screen.dart';
 
 class BoardOverviewScreen extends ConsumerWidget {
   const BoardOverviewScreen({super.key});
@@ -15,14 +16,14 @@ class BoardOverviewScreen extends ConsumerWidget {
       body: boards.isEmpty
           ? const Center(
               child: Text(
-                'Keine Boards vorhanden.\nErstelle dein erstes Moodboard!',
+                'No boards available.\nCreate your first moodboard!',
                 textAlign: TextAlign.center,
               ),
             )
           : GridView.builder(
               padding: const EdgeInsets.all(16),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Tablet/Phone Anpassung könnte hier hin
+                crossAxisCount: 2, // Tablet/Phone adjustment could go here
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.2,
@@ -45,16 +46,16 @@ class BoardOverviewScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Neues Board'),
+        title: const Text('New Board'),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(hintText: 'Name des Boards'),
+          decoration: const InputDecoration(hintText: 'Board Name'),
           autofocus: true,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen'),
+            child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () {
@@ -63,7 +64,7 @@ class BoardOverviewScreen extends ConsumerWidget {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Erstellen'),
+            child: const Text('Create'),
           ),
         ],
       ),
@@ -82,10 +83,10 @@ class _BoardCard extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          // TODO: Navigation zum CanvasScreen
-          ScaffoldMessenger.of(
+          Navigator.push(
             context,
-          ).showSnackBar(SnackBar(content: Text('Öffne Board: ${board.name}')));
+            MaterialPageRoute(builder: (_) => CanvasScreen(boardId: board.id)),
+          );
         },
         onLongPress: () {
           _showDeleteDialog(context, ref, board);
@@ -97,7 +98,7 @@ class _BoardCard extends ConsumerWidget {
               child: Container(
                 color: Colors.grey[800],
                 child: const Icon(Icons.image, size: 48, color: Colors.white24),
-                // Später: Preview des ersten Bildes
+                // Later: Preview of the first image
               ),
             ),
             Padding(
@@ -112,7 +113,7 @@ class _BoardCard extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    '${board.items.length} Elemente',
+                    '${board.items.length} Items',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -128,12 +129,12 @@ class _BoardCard extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Board löschen?'),
-        content: Text('Möchtest du "${board.name}" wirklich löschen?'),
+        title: const Text('Delete Board?'),
+        content: Text('Do you really want to delete "${board.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -141,7 +142,7 @@ class _BoardCard extends ConsumerWidget {
               Navigator.pop(context);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Löschen'),
+            child: const Text('Delete'),
           ),
         ],
       ),
