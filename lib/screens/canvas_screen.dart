@@ -343,7 +343,11 @@ class _CanvasItem extends ConsumerWidget {
         final fullPath = '${dir.path}/${item.imageSource}';
         final file = File(fullPath);
         if (file.existsSync()) {
-          return Image.file(file, fit: BoxFit.cover);
+          return Image.file(
+            file,
+            fit: BoxFit.cover,
+            cacheWidth: 1000, // RAM-Optimierung
+          );
         }
         return const Center(
           child: Icon(Icons.broken_image, color: Colors.orange),

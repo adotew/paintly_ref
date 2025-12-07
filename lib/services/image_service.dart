@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/painting.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../models/board_item.dart';
 
 class ImageService {
@@ -25,15 +25,28 @@ class ImageService {
         final image = images[i];
         final offset = i * 20.0;
 
-        // 1. Bild dauerhaft speichern
-        final fileExtension = path.extension(image.path);
-        final fileName = '${_uuid.v4()}$fileExtension';
-        final savedImage = await File(
-          image.path,
-        ).copy('${appDir.path}/$fileName');
+        // 1. Bild komprimieren und speichern
+        // Wir nutzen .jpg für konsistente Kompression
+        final fileName = '${_uuid.v4()}.jpg';
+        final targetPath = '${appDir.path}/$fileName';
 
-        // 2. Dimensionen bestimmen (vom gespeicherten Bild)
-        final bytes = await savedImage.readAsBytes();
+        // Komprimierung: Max 1500px Kante, 85% Qualität
+        final compressedFile = await FlutterImageCompress.compressAndGetFile(
+          image.path,
+          targetPath,
+          minWidth: 1500,
+          minHeight: 1500,
+          quality: 85,
+        );
+
+        if (compressedFile == null) {
+          // Fallback falls Kompression fehlschlägt: Original kopieren
+          await File(image.path).copy(targetPath);
+        }
+
+        // 2. Dimensionen bestimmen (vom (komprimierten) Bild im Storage)
+        final savedFile = File(targetPath);
+        final bytes = await savedFile.readAsBytes();
         final decodedImage = await decodeImageFromList(bytes);
 
         double w = decodedImage.width.toDouble();
@@ -51,7 +64,6 @@ class ImageService {
         }
 
         final newItem = BoardItem(
-          // Wir speichern nur den Dateinamen, um Pfad-Probleme bei Updates (iOS) zu vermeiden
           imageSource: fileName,
           x: offset,
           y: offset,
