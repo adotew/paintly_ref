@@ -1,10 +1,17 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/board.dart';
 import '../services/storage_service.dart';
 
 // Provider für den StorageService (Single Source of Truth für die Datenbank-Instanz)
 final storageServiceProvider = Provider<StorageService>((ref) {
   return StorageService();
+});
+
+// Provider für das Dokumenten-Verzeichnis (für Bilder)
+final appDocumentsDirectoryProvider = FutureProvider<Directory>((ref) async {
+  return await getApplicationDocumentsDirectory();
 });
 
 // Provider, der den asynchronen Start der App (Hive Init) darstellt

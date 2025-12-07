@@ -22,6 +22,8 @@ final activeBoardProvider = Provider<Board?>((ref) {
   }
 });
 
+final selectedItemIdProvider = StateProvider<String?>((ref) => null);
+
 class CanvasScreen extends ConsumerStatefulWidget {
   final String boardId;
 
@@ -33,6 +35,11 @@ class CanvasScreen extends ConsumerStatefulWidget {
 
 class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   late TransformationController _transformationController;
+
+  // Gesture state for the selected item
+  Offset? _dragStartLocalPosition;
+  Offset? _currentDragOffset;
+  double _currentScaleDelta = 1.0;
 
   @override
   void initState() {
@@ -48,6 +55,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedItemId = ref.watch(selectedItemIdProvider);
     final board = ref
         .watch(boardListProvider)
         .firstWhere(
@@ -101,29 +109,121 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 minScale: 0.1,
                 maxScale: 4.0,
                 constrained: false, // Important for infinite canvas feeling
+                // Disable canvas interaction when an item is selected
+                panEnabled: selectedItemId == null,
+                scaleEnabled: selectedItemId == null,
                 child: Container(
                   width: 7000,
                   height: 7000,
                   // Transparent so we see the static background
                   color: Colors.transparent,
-                  child: Stack(
-                    children: [
-                      // The Items
-                      ...board.items.map(
-                        (item) => _CanvasItem(
-                          item: item,
-                          onUpdate: (updatedItem) {
-                            final newItems = board.items.map((i) {
-                              return i.id == updatedItem.id ? updatedItem : i;
-                            }).toList();
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      ref.read(selectedItemIdProvider.notifier).state = null;
+                    },
+                    onScaleStart: selectedItemId != null
+                        ? (details) {
+                            setState(() {
+                              _dragStartLocalPosition = details.localFocalPoint;
+                              _currentDragOffset = Offset.zero;
+                              _currentScaleDelta = 1.0;
+                            });
+                          }
+                        : null,
+                    onScaleUpdate: selectedItemId != null
+                        ? (details) {
+                            if (_dragStartLocalPosition != null) {
+                              setState(() {
+                                // If using 2+ fingers, it's a pinch/zoom -> Update Scale Only
+                                if (details.pointerCount > 1) {
+                                  _currentScaleDelta = details.scale;
+                                  // We intentionally do NOT update _currentDragOffset here
+                                  // to prevent the image from moving while resizing.
+                                } else {
+                                  // If using 1 finger, it's a drag -> Update Position Only
+                                  _currentDragOffset =
+                                      details.localFocalPoint -
+                                      _dragStartLocalPosition!;
+                                }
+                              });
+                            }
+                          }
+                        : null,
+                    onScaleEnd: selectedItemId != null
+                        ? (details) {
+                            if (_dragStartLocalPosition != null) {
+                              // Find the selected item
+                              final itemIndex = board.items.indexWhere(
+                                (i) => i.id == selectedItemId,
+                              );
+                              if (itemIndex != -1) {
+                                final item = board.items[itemIndex];
+                                final updatedItem = item.copyWith(
+                                  x: item.x + (_currentDragOffset?.dx ?? 0.0),
+                                  y: item.y + (_currentDragOffset?.dy ?? 0.0),
+                                  scale: item.scale * _currentScaleDelta,
+                                );
 
-                            ref
-                                .read(boardListProvider.notifier)
-                                .updateBoard(board.copyWith(items: newItems));
-                          },
-                        ),
-                      ),
-                    ],
+                                final newItems = List<BoardItem>.from(
+                                  board.items,
+                                );
+                                newItems[itemIndex] = updatedItem;
+
+                                ref
+                                    .read(boardListProvider.notifier)
+                                    .updateBoard(
+                                      board.copyWith(items: newItems),
+                                    );
+                              }
+
+                              setState(() {
+                                _dragStartLocalPosition = null;
+                                _currentDragOffset = null;
+                                _currentScaleDelta = 1.0;
+                              });
+                            }
+                          }
+                        : null,
+                    child: Stack(
+                      children: [
+                        // The Items
+                        ...board.items.map((item) {
+                          final isSelected = item.id == selectedItemId;
+                          return _CanvasItem(
+                            item: item,
+                            // Only pass offsets if this is the selected item
+                            additionalOffset: isSelected
+                                ? _currentDragOffset
+                                : null,
+                            additionalScale: isSelected
+                                ? _currentScaleDelta
+                                : 1.0,
+                            onSelect: () {
+                              ref.read(selectedItemIdProvider.notifier).state =
+                                  item.id;
+
+                              // Move the item to the end of the list (render on top)
+                              // Only if it's not already the last one
+                              if (board.items.isNotEmpty &&
+                                  item.id != board.items.last.id) {
+                                final newItems = List<BoardItem>.from(
+                                  board.items,
+                                );
+                                newItems.removeWhere((i) => i.id == item.id);
+                                newItems.add(item);
+
+                                ref
+                                    .read(boardListProvider.notifier)
+                                    .updateBoard(
+                                      board.copyWith(items: newItems),
+                                    );
+                              }
+                            },
+                          );
+                        }),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -160,56 +260,99 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   }
 }
 
-class _CanvasItem extends StatelessWidget {
+class _CanvasItem extends ConsumerWidget {
   final BoardItem item;
-  final Function(BoardItem) onUpdate;
+  final Offset? additionalOffset;
+  final double additionalScale;
+  final VoidCallback? onSelect;
 
-  const _CanvasItem({required this.item, required this.onUpdate});
+  const _CanvasItem({
+    required this.item,
+    this.additionalOffset,
+    this.additionalScale = 1.0,
+    this.onSelect,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isSelected = ref.watch(selectedItemIdProvider) == item.id;
+
+    final displayX = item.x + (additionalOffset?.dx ?? 0.0);
+    final displayY = item.y + (additionalOffset?.dy ?? 0.0);
+    final displayScale = item.scale * additionalScale;
+
     return Positioned(
-      left: 3500 + item.x, // 2500 is the center of our 5000x5000 Canvas
-      top: 3500 + item.y,
-      child: Transform.rotate(
-        angle: item.rotation,
-        child: GestureDetector(
-          onPanUpdate: (details) {
-            onUpdate(
-              item.copyWith(
-                x: item.x + details.delta.dx,
-                y: item.y + details.delta.dy,
+      left: 3500 + displayX,
+      top: 3500 + displayY,
+      child: GestureDetector(
+        onTap: onSelect,
+        child: Transform.rotate(
+          angle: item.rotation,
+          child: Stack(
+            children: [
+              // Image container (full size, no border)
+              Container(
+                width: item.width * displayScale,
+                height: item.height * displayScale,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(21),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: _buildImageContent(ref),
+                ),
               ),
-            );
-          },
-          child: Container(
-            width: item.width * item.scale,
-            height: item.height * item.scale,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.blueAccent, width: 3),
-              borderRadius: BorderRadius.circular(21),
-              color: Colors.white, // Placeholder Color
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: _buildImageContent(),
-            ),
+              // Border overlay (only when selected)
+              if (isSelected)
+                Container(
+                  width: item.width * displayScale,
+                  height: item.height * displayScale,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 3),
+                    borderRadius: BorderRadius.circular(21),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildImageContent() {
+  Widget _buildImageContent(WidgetRef ref) {
     if (item.imageSource.startsWith('http')) {
       return Image.network(item.imageSource, fit: BoxFit.cover);
-    } else {
+    }
+
+    // Legacy Support: Falls der Pfad absolut ist (beginnt mit /), nutzen wir ihn direkt.
+    // (Dies deckt alte Items ab, bevor wir auf Dateinamen umgestiegen sind)
+    if (item.imageSource.startsWith('/') ||
+        (Platform.isWindows && item.imageSource.contains(':'))) {
       final file = File(item.imageSource);
       if (file.existsSync()) {
         return Image.file(file, fit: BoxFit.cover);
       }
       return const Center(child: Icon(Icons.broken_image, color: Colors.red));
     }
+
+    // Relative Pfade (neu): Wir müssen das Dokumenten-Verzeichnis holen
+    final appDirAsync = ref.watch(appDocumentsDirectoryProvider);
+
+    return appDirAsync.when(
+      data: (dir) {
+        final fullPath = '${dir.path}/${item.imageSource}';
+        final file = File(fullPath);
+        if (file.existsSync()) {
+          return Image.file(file, fit: BoxFit.cover);
+        }
+        return const Center(
+          child: Icon(Icons.broken_image, color: Colors.orange),
+        );
+      },
+      loading: () => const SizedBox.shrink(), // Oder kleiner Platzhalter
+      error: (_, __) =>
+          const Center(child: Icon(Icons.error, color: Colors.red)),
+    );
   }
 }
 
