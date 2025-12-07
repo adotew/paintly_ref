@@ -27,6 +27,13 @@ class CanvasItem extends ConsumerWidget {
     final displayY = item.y + (additionalOffset?.dy ?? 0.0);
     final displayScale = item.scale * additionalScale;
 
+    // Scale border properties proportionally with the image size
+    final baseBorderRadius = 21.0;
+    final baseBorderWidth = 3.0;
+
+    final scaledBorderRadius = baseBorderRadius * displayScale;
+    final scaledBorderWidth = baseBorderWidth * displayScale;
+
     return Positioned(
       left: 3500 + displayX,
       top: 3500 + displayY,
@@ -42,10 +49,10 @@ class CanvasItem extends ConsumerWidget {
                   width: item.width * displayScale,
                   height: item.height * displayScale,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(21),
+                    borderRadius: BorderRadius.circular(scaledBorderRadius),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(scaledBorderRadius),
                     child: _buildImageContent(ref),
                   ),
                 ),
@@ -55,8 +62,11 @@ class CanvasItem extends ConsumerWidget {
                     width: item.width * displayScale,
                     height: item.height * displayScale,
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.blueAccent, width: 3),
-                      borderRadius: BorderRadius.circular(21),
+                      border: Border.all(
+                        color: Colors.blueAccent,
+                        width: scaledBorderWidth,
+                      ),
+                      borderRadius: BorderRadius.circular(scaledBorderRadius),
                     ),
                   ),
               ],
@@ -106,4 +116,3 @@ class CanvasItem extends ConsumerWidget {
     );
   }
 }
-
