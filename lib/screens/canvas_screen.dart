@@ -284,35 +284,37 @@ class _CanvasItem extends ConsumerWidget {
     return Positioned(
       left: 3500 + displayX,
       top: 3500 + displayY,
-      child: GestureDetector(
-        onTap: onSelect,
-        child: Transform.rotate(
-          angle: item.rotation,
-          child: Stack(
-            children: [
-              // Image container (full size, no border)
-              Container(
-                width: item.width * displayScale,
-                height: item.height * displayScale,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(21),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: _buildImageContent(ref),
-                ),
-              ),
-              // Border overlay (only when selected)
-              if (isSelected)
+      child: RepaintBoundary(
+        child: GestureDetector(
+          onTap: onSelect,
+          child: Transform.rotate(
+            angle: item.rotation,
+            child: Stack(
+              children: [
+                // Image container (full size, no border)
                 Container(
                   width: item.width * displayScale,
                   height: item.height * displayScale,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blueAccent, width: 3),
                     borderRadius: BorderRadius.circular(21),
                   ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: _buildImageContent(ref),
+                  ),
                 ),
-            ],
+                // Border overlay (only when selected)
+                if (isSelected)
+                  Container(
+                    width: item.width * displayScale,
+                    height: item.height * displayScale,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blueAccent, width: 3),
+                      borderRadius: BorderRadius.circular(21),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
