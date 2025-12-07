@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../state/board_provider.dart';
 import '../models/board.dart';
+import '../models/board_item.dart';
 import 'canvas_screen.dart';
 
 class BoardOverviewScreen extends ConsumerWidget {
@@ -12,31 +16,69 @@ class BoardOverviewScreen extends ConsumerWidget {
     final boards = ref.watch(boardListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('PaintlyRef Boards')),
-      body: boards.isEmpty
-          ? const Center(
-              child: Text(
-                'No boards available.\nCreate your first moodboard!',
-                textAlign: TextAlign.center,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(25.0, 30.0, 16.0, 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SvgPicture.asset(
+                    'lib/assets/PaintlyRef.svg',
+                    width: 150,
+                    fit: BoxFit.contain,
+                    alignment: Alignment.centerLeft,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 0.0, 8.0, 0.0),
+                    child: IconButton(
+                      onPressed: () => _showCreateDialog(context, ref),
+                      icon: const Icon(Icons.add),
+                      style: IconButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 43, 43, 43),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        fixedSize: const Size(48, 48),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            )
-          : GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Tablet/Phone adjustment could go here
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.2,
-              ),
-              itemCount: boards.length,
-              itemBuilder: (context, index) {
-                final board = boards[index];
-                return _BoardCard(board: board);
-              },
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateDialog(context, ref),
-        child: const Icon(Icons.add),
+            Expanded(
+              child: boards.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Create your first Board!',
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: GridView.builder(
+                        padding: const EdgeInsets.only(top: 0, bottom: 16.0),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount:
+                                  2, // Tablet/Phone adjustment could go here
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 1,
+                            ),
+                        itemCount: boards.length,
+                        itemBuilder: (context, index) {
+                          final board = boards[index];
+                          return _BoardCard(board: board);
+                        },
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -91,32 +133,49 @@ class _BoardCard extends ConsumerWidget {
         onLongPress: () {
           _showDeleteDialog(context, ref, board);
         },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Expanded(
+            board.items.isEmpty
+                ? Container(
+                    color: Colors.grey[800],
+                    child: const Icon(
+                      Icons.image,
+                      size: 48,
+                      color: Colors.white24,
+                    ),
+                  )
+                : _ImagePreviewGrid(items: board.items),
+            // Gradient-Overlay unten mit Board-Namen
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
               child: Container(
-                color: Colors.grey[800],
-                child: const Icon(Icons.image, size: 48, color: Colors.white24),
-                // Later: Preview of the first image
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+                height: 400,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.5),
+                    ],
+                  ),
+                ),
+                padding: const EdgeInsets.all(12.0),
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
                     board.name,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    '${board.items.length} Items',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+                ),
               ),
             ),
           ],
@@ -147,5 +206,99 @@ class _BoardCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+class _ImagePreviewGrid extends StatelessWidget {
+  final List<BoardItem> items;
+
+  const _ImagePreviewGrid({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    // Wenn weniger als 4 Bilder: nur das letzte Bild anzeigen
+    // Wenn 4 oder mehr Bilder: die letzten 4 anzeigen
+    final itemsToShow = items.length < 4
+        ? (items.isEmpty ? [] : [items.last])
+        : items.sublist(items.length - 4);
+
+    if (itemsToShow.isEmpty) {
+      return Container(
+        color: Colors.grey[800],
+        child: const Icon(Icons.image, size: 48, color: Colors.white24),
+      );
+    }
+
+    // Wenn nur 1 Bild vorhanden ist, zeige es in voller Größe
+    if (itemsToShow.length == 1) {
+      return FutureBuilder<String>(
+        future: _getImagePath(itemsToShow[0].imageSource),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data != null) {
+            return Image.file(
+              File(snapshot.data!),
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[800],
+                  child: const Icon(
+                    Icons.broken_image,
+                    size: 48,
+                    color: Colors.white24,
+                  ),
+                );
+              },
+            );
+          }
+          return Container(
+            color: Colors.grey[800],
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        },
+      );
+    }
+
+    // Für 2-4 Bilder: 2x2 Grid
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+      ),
+      itemCount: itemsToShow.length,
+      itemBuilder: (context, index) {
+        return FutureBuilder<String>(
+          future: _getImagePath(itemsToShow[index].imageSource),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data != null) {
+              return Image.file(
+                File(snapshot.data!),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[800],
+                    child: const Icon(
+                      Icons.broken_image,
+                      size: 24,
+                      color: Colors.white24,
+                    ),
+                  );
+                },
+              );
+            }
+            return Container(
+              color: Colors.grey[800],
+              child: const Center(
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<String> _getImagePath(String imageSource) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    return '${appDir.path}/$imageSource';
   }
 }

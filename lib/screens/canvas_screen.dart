@@ -45,8 +45,22 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
     if (board.id == 'error') {
       return Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: const Center(child: Text('Board not found')),
+        body: Stack(
+          children: [
+            const Center(child: Text('Board not found')),
+            // Zurück-Button oben links
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.transparent,
       );
     }
 
@@ -54,10 +68,28 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       floatingActionButton: FloatingActionButton(
         heroTag: 'add_image',
         onPressed: () => _pickAndAddImage(context, ref, board),
-        child: const Icon(Icons.add),
         backgroundColor: Colors.grey[800],
+        child: const Icon(Icons.add),
       ),
-      body: InteractiveBoardCanvas(board: board),
+      body: Stack(
+        children: [
+          InteractiveBoardCanvas(board: board),
+          // Zurück-Button oben links
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black.withValues(alpha: 0.5),
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

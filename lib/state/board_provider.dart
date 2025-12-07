@@ -28,8 +28,8 @@ class BoardListNotifier extends StateNotifier<List<Board>> {
     _loadBoards();
   }
 
-  void _loadBoards() {
-    state = _storageService.getAllBoards();
+  void _loadBoards() async {
+    state = await Future.value(_storageService.getAllBoards());
   }
 
   Future<void> addBoard(String name) async {
