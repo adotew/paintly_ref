@@ -5,6 +5,7 @@ import '../models/board_item.dart';
 import '../state/board_provider.dart';
 import '../services/image_service.dart';
 import '../widgets/interactive_board_canvas.dart';
+import '../widgets/image_toolbar.dart';
 
 // Provider for the currently selected board (set via .family or override)
 // For simplicity, we use a StateProvider here that holds the ID.
@@ -64,6 +65,8 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       );
     }
 
+    final selectedItemId = ref.watch(selectedItemIdProvider);
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         heroTag: 'add_image',
@@ -88,6 +91,8 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               ),
             ),
           ),
+          // Image Toolbar - appears when an image is selected
+          ImageToolbar(isVisible: selectedItemId != null),
         ],
       ),
     );
