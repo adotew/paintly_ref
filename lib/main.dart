@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'screens/board_overview_screen.dart';
 import 'state/board_provider.dart';
 
@@ -23,7 +22,7 @@ class MainApp extends ConsumerWidget {
         useMaterial3: true,
         colorSchemeSeed: Colors.blueGrey,
         brightness: Brightness.dark, // Moodboard apps often look better dark
-        textTheme: GoogleFonts.poppinsTextTheme(),
+        fontFamily: 'Poppins',
       ),
       home: initStatus.when(
         data: (_) => const BoardOverviewScreen(),

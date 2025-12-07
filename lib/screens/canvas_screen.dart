@@ -68,12 +68,14 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     final selectedItemId = ref.watch(selectedItemIdProvider);
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'add_image',
-        onPressed: () => _pickAndAddImage(context, ref, board),
-        backgroundColor: Colors.grey[800],
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: selectedItemId == null
+          ? FloatingActionButton(
+              heroTag: 'add_image',
+              onPressed: () => _pickAndAddImage(context, ref, board),
+              backgroundColor: Colors.grey[800],
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Stack(
         children: [
           InteractiveBoardCanvas(board: board),

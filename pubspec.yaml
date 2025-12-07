@@ -18,7 +18,6 @@ dependencies:
   
   # Utilities
   uuid: ^4.2.2 # Für eindeutige IDs
-  google_fonts: ^6.3.3
   
   # Media & Interaction
   super_drag_and_drop: ^0.9.1
@@ -40,3 +39,9 @@ flutter:
   uses-material-design: true
   assets:
     - lib/assets/
+  
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: lib/assets/Poppins-Regular.ttf
+          weight: 400

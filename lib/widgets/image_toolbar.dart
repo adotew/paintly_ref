@@ -7,26 +7,25 @@ class ImageToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isVisible) {
-      return const SizedBox.shrink();
-    }
-
-    return Positioned(
-      bottom: 0,
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
+      bottom: isVisible ? 0 : -200,
       left: 0,
       right: 0,
       child: SafeArea(
+        top: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Center(
             child: Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 6.0,
+                horizontal: 12.0,
+                vertical: 10.0,
               ),
               decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.0),
+                borderRadius: BorderRadius.circular(16.0),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.3),
@@ -36,32 +35,38 @@ class ImageToolbar extends StatelessWidget {
                 ],
                 border: Border.all(color: Colors.grey[800]!, width: 1),
               ),
-              child: IntrinsicHeight(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _ToolbarButton(icon: Icons.format_bold, isActive: false),
-                    _ToolbarButton(icon: Icons.format_italic, isActive: false),
-                    _ToolbarButton(
-                      icon: Icons.format_underlined,
-                      isActive: false,
-                    ),
-                    _ToolbarButton(
-                      icon: Icons.strikethrough_s,
-                      isActive: false,
-                    ),
-                    _ToolbarButton(
-                      icon: Icons.format_color_text,
-                      isActive: false,
-                    ),
-                    _ToolbarButton(
-                      icon: Icons.format_color_fill,
-                      isActive: false,
-                    ),
-                    _ToolbarButton(icon: Icons.link, isActive: false),
-                    _ToolbarButton(icon: Icons.image, isActive: true),
-                    _ToolbarButton(icon: Icons.code, isActive: false),
-                  ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: IntrinsicHeight(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _ToolbarButton(icon: Icons.format_bold, isActive: false),
+                      _ToolbarButton(
+                        icon: Icons.format_italic,
+                        isActive: false,
+                      ),
+                      _ToolbarButton(
+                        icon: Icons.format_underlined,
+                        isActive: false,
+                      ),
+                      _ToolbarButton(
+                        icon: Icons.strikethrough_s,
+                        isActive: false,
+                      ),
+                      _ToolbarButton(
+                        icon: Icons.format_color_text,
+                        isActive: false,
+                      ),
+                      _ToolbarButton(
+                        icon: Icons.format_color_fill,
+                        isActive: false,
+                      ),
+                      _ToolbarButton(icon: Icons.link, isActive: false),
+                      _ToolbarButton(icon: Icons.image, isActive: true),
+                      _ToolbarButton(icon: Icons.code, isActive: false),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -109,17 +114,22 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
             _isToggled = !_isToggled;
           });
         },
-        borderRadius: BorderRadius.circular(6.0),
-        child: Container(
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color: _isToggled ? Colors.grey[700] : Colors.transparent,
-            borderRadius: BorderRadius.circular(6.0),
-          ),
-          child: Icon(
-            widget.icon,
-            size: 18.0,
-            color: _isToggled ? Colors.white : Colors.grey[400],
+        borderRadius: BorderRadius.circular(8.0),
+        child: Padding(
+          padding: const EdgeInsetsGeometry.fromLTRB(2.0, 0.0, 2.0, 0.0),
+          child: Container(
+            padding: const EdgeInsetsGeometry.fromLTRB(12.0, 12.0, 12.0, 12.0),
+            decoration: BoxDecoration(
+              color: _isToggled
+                  ? const Color.fromARGB(255, 66, 66, 66)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Icon(
+              widget.icon,
+              size: 24.0,
+              color: _isToggled ? Colors.white : Colors.grey[400],
+            ),
           ),
         ),
       ),

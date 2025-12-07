@@ -51,10 +51,32 @@ class BoardOverviewScreen extends ConsumerWidget {
             ),
             Expanded(
               child: boards.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Create your first Board!',
-                        textAlign: TextAlign.center,
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsetsGeometry.fromLTRB(
+                              0,
+                              0,
+                              0,
+                              16.0,
+                            ),
+                            child: SvgPicture.asset(
+                              'lib/assets/empty_board.svg',
+                              width: 200,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Create your first Board!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   : Padding(
