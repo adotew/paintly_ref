@@ -72,6 +72,22 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         toolbarHeight: 50.0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.grey,
+        leadingWidth: 112.0, // Double width for two buttons
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new),
+              onPressed: () => Navigator.pop(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                // TODO: Implement pen/drawing functionality
+              },
+            ),
+          ],
+        ),
       ),
       floatingActionButton: selectedItemId == null
           ? FloatingActionButton(
