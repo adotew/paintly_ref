@@ -32,11 +32,12 @@ class BoardListNotifier extends StateNotifier<List<Board>> {
     state = await Future.value(_storageService.getAllBoards());
   }
 
-  Future<void> addBoard(String name) async {
+  Future<Board> addBoard(String name) async {
     final newBoard = Board(name: name);
     await _storageService.saveBoard(newBoard);
     // Wir laden neu oder fügen lokal hinzu. Da Board immutable ist, fügen wir es der Liste hinzu.
     state = [...state, newBoard];
+    return newBoard;
   }
 
   Future<void> updateBoard(Board updatedBoard) async {

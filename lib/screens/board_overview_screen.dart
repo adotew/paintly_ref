@@ -12,7 +12,17 @@ class BoardOverviewScreen extends ConsumerWidget {
   const BoardOverviewScreen({super.key});
 
   void _createBoard(BuildContext context, WidgetRef ref) {
-    ref.read(boardListProvider.notifier).addBoard('Untitled');
+    ref.read(boardListProvider.notifier).addBoard('Untitled').then((
+      board,
+    ) async {
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => CanvasScreen(boardId: board.id)),
+        );
+      }
+    });
   }
 
   @override
