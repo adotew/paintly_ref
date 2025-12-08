@@ -26,7 +26,7 @@ class BoardOverviewScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SvgPicture.asset(
-                    'lib/assets/PaintlyRef.svg',
+                    'assets/PaintlyRef.svg',
                     width: 150,
                     fit: BoxFit.contain,
                     alignment: Alignment.centerLeft,
@@ -63,7 +63,7 @@ class BoardOverviewScreen extends ConsumerWidget {
                               16.0,
                             ),
                             child: SvgPicture.asset(
-                              'lib/assets/empty_board.svg',
+                              'assets/empty_board.svg',
                               width: 200,
                             ),
                           ),
