@@ -11,6 +11,10 @@ import 'canvas_screen.dart';
 class BoardOverviewScreen extends ConsumerWidget {
   const BoardOverviewScreen({super.key});
 
+  void _createBoard(BuildContext context, WidgetRef ref) {
+    ref.read(boardListProvider.notifier).addBoard('Untitled');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final boards = ref.watch(boardListProvider);
@@ -34,7 +38,7 @@ class BoardOverviewScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16.0, 0.0, 8.0, 0.0),
                     child: IconButton(
-                      onPressed: () => _showCreateDialog(context, ref),
+                      onPressed: () => _createBoard(context, ref),
                       icon: const Icon(Icons.add),
                       style: IconButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 43, 43, 43),
@@ -98,36 +102,6 @@ class BoardOverviewScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showCreateDialog(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('New Board'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Board Name'),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                ref.read(boardListProvider.notifier).addBoard(controller.text);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Create'),
-          ),
-        ],
       ),
     );
   }
