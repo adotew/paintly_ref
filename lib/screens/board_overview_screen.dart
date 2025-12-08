@@ -79,24 +79,21 @@ class BoardOverviewScreen extends ConsumerWidget {
                         ],
                       ),
                     )
-                  : Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: GridView.builder(
-                        padding: const EdgeInsets.only(top: 0, bottom: 16.0),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount:
-                                  2, // Tablet/Phone adjustment could go here
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                              childAspectRatio: 1,
-                            ),
-                        itemCount: boards.length,
-                        itemBuilder: (context, index) {
-                          final board = boards[index];
-                          return _BoardCard(board: board);
-                        },
-                      ),
+                  : GridView.builder(
+                      padding: const EdgeInsets.all(32.0),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                4, // Tablet/Phone adjustment could go here
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 1,
+                          ),
+                      itemCount: boards.length,
+                      itemBuilder: (context, index) {
+                        final board = boards[index];
+                        return _BoardCard(board: board);
+                      },
                     ),
             ),
           ],

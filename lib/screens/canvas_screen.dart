@@ -68,31 +68,24 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     final selectedItemId = ref.watch(selectedItemIdProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 50.0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.grey,
+      ),
       floatingActionButton: selectedItemId == null
           ? FloatingActionButton(
               heroTag: 'add_image',
               onPressed: () => _pickAndAddImage(context, ref, board),
               backgroundColor: Colors.grey[800],
+              foregroundColor: Colors.white,
               child: const Icon(Icons.add),
             )
           : null,
       body: Stack(
         children: [
           InteractiveBoardCanvas(board: board),
-          // Zurück-Button oben links
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withValues(alpha: 0.5),
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ),
-          ),
+
           // Image Toolbar - appears when an image is selected
           ImageToolbar(isVisible: selectedItemId != null),
         ],
