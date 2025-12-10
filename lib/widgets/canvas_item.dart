@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board_item.dart';
 import '../state/board_provider.dart';
-import '../screens/canvas_screen.dart'; // For selectedItemIdProvider
+import '../screens/canvas_screen.dart';
+import 'corner_handles.dart'; // For selectedItemIdProvider
+
+/// Custom painter for corner resize handles that wrap around corners
 
 class CanvasItem extends ConsumerWidget {
   final BoardItem item;
@@ -67,6 +70,20 @@ class CanvasItem extends ConsumerWidget {
                         width: scaledBorderWidth,
                       ),
                       borderRadius: BorderRadius.circular(scaledBorderRadius),
+                    ),
+                  ),
+                // Corner resize handles (only when selected)
+                if (isSelected)
+                  CustomPaint(
+                    size: Size(
+                      item.width * displayScale,
+                      item.height * displayScale,
+                    ),
+                    painter: CornerHandlePainter(
+                      handleLength: 12.0 * displayScale,
+                      handleThickness: 8.0 * displayScale,
+                      handleColor: Color.fromARGB(255, 235, 235, 235),
+                      borderRadius: scaledBorderRadius,
                     ),
                   ),
               ],
