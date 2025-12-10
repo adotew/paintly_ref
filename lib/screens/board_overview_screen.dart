@@ -15,7 +15,7 @@ class BoardOverviewScreen extends ConsumerWidget {
     ref.read(boardListProvider.notifier).addBoard('Untitled').then((
       board,
     ) async {
-      await Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 350));
       if (context.mounted) {
         Navigator.push(
           context,
@@ -64,51 +64,20 @@ class BoardOverviewScreen extends ConsumerWidget {
               ),
             ),
             Expanded(
-              child: boards.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsetsGeometry.fromLTRB(
-                              0,
-                              0,
-                              0,
-                              16.0,
-                            ),
-                            child: SvgPicture.asset(
-                              'assets/empty_board.svg',
-                              width: 200,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Create your first Board!',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(32.0),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount:
-                                4, // Tablet/Phone adjustment could go here
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            childAspectRatio: 1,
-                          ),
-                      itemCount: boards.length,
-                      itemBuilder: (context, index) {
-                        final board = boards[index];
-                        return _BoardCard(board: board);
-                      },
-                    ),
+              child: GridView.builder(
+                padding: const EdgeInsets.all(32.0),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4, // Tablet/Phone adjustment could go here
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1,
+                ),
+                itemCount: boards.length,
+                itemBuilder: (context, index) {
+                  final board = boards[index];
+                  return _BoardCard(board: board);
+                },
+              ),
             ),
           ],
         ),
@@ -169,14 +138,29 @@ class _BoardCard extends ConsumerWidget {
                 padding: const EdgeInsets.all(12.0),
                 child: Align(
                   alignment: Alignment.bottomLeft,
-                  child: Text(
-                    board.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        board.name,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${board.items.length} ${board.items.length == 1 ? 'Image' : 'Images'}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
