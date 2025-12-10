@@ -29,9 +29,6 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - photo_manager (3.8.3):
-    - Flutter
-    - FlutterMacOS
   - SDWebImage (5.21.3):
     - SDWebImage/Core (= 5.21.3)
   - SDWebImage/Core (5.21.3)
@@ -48,7 +45,6 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - irondash_engine_context (from `.symlinks/plugins/irondash_engine_context/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
-  - photo_manager (from `.symlinks/plugins/photo_manager/darwin`)
   - super_native_extensions (from `.symlinks/plugins/super_native_extensions/ios`)
 
 SPEC REPOS:
@@ -71,8 +67,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/irondash_engine_context/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
-  photo_manager:
-    :path: ".symlinks/plugins/photo_manager/darwin"
   super_native_extensions:
     :path: ".symlinks/plugins/super_native_extensions/ios"
 
@@ -85,7 +79,6 @@ SPEC CHECKSUMS:
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   Mantle: c5aa8794a29a022dfbbfc9799af95f477a69b62d
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
-  photo_manager: fe4cbb0808b96f8be4af7ce6ae18dcd9c9b983c6
   SDWebImage: 16309af6d214ba3f77a7c6f6fdda888cb313a50a
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   super_native_extensions: b763c02dc3a8fd078389f410bf15149179020cb4

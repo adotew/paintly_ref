@@ -11,9 +11,6 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - photo_manager (3.8.3):
-    - Flutter
-    - FlutterMacOS
   - super_native_extensions (0.0.1):
     - FlutterMacOS
 
@@ -24,7 +21,6 @@ DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
   - irondash_engine_context (from `Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos`)
   - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
-  - photo_manager (from `Flutter/ephemeral/.symlinks/plugins/photo_manager/darwin`)
   - super_native_extensions (from `Flutter/ephemeral/.symlinks/plugins/super_native_extensions/macos`)
 
 EXTERNAL SOURCES:
@@ -40,8 +36,6 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos
   path_provider_foundation:
     :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
-  photo_manager:
-    :path: Flutter/ephemeral/.symlinks/plugins/photo_manager/darwin
   super_native_extensions:
     :path: Flutter/ephemeral/.symlinks/plugins/super_native_extensions/macos
 
@@ -52,7 +46,6 @@ SPEC CHECKSUMS:
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   irondash_engine_context: 893c7d96d20ce361d7e996f39d360c4c2f9869ba
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
-  photo_manager: fe4cbb0808b96f8be4af7ce6ae18dcd9c9b983c6
   super_native_extensions: c2795d6d9aedf4a79fae25cb6160b71b50549189
 
 PODFILE CHECKSUM: 54d867c82ac51cbd61b565781b9fada492027009

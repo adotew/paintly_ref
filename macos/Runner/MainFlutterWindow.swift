@@ -11,5 +11,8 @@ class MainFlutterWindow: NSWindow {
     RegisterGeneratedPlugins(registry: flutterViewController)
 
     super.awakeFromNib()
+    
+    // Make window always on top (like PureRef)
+    self.level = .floating
   }
 }
