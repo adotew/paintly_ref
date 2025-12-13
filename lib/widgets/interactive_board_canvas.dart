@@ -24,7 +24,6 @@ class _InteractiveBoardCanvasState
   // Gesture state for the selected item
   Offset? _dragStartLocalPosition;
   Offset? _currentDragOffset;
-  double _currentScaleDelta = 1.0;
 
   @override
   void initState() {
@@ -92,7 +91,6 @@ class _InteractiveBoardCanvasState
                           setState(() {
                             _dragStartLocalPosition = details.localFocalPoint;
                             _currentDragOffset = Offset.zero;
-                            _currentScaleDelta = 1.0;
                           });
                         }
                       : null,
@@ -100,13 +98,9 @@ class _InteractiveBoardCanvasState
                       ? (details) {
                           if (_dragStartLocalPosition != null) {
                             setState(() {
-                              // If using 2+ fingers, it's a pinch/zoom -> Update Scale Only
-                              if (details.pointerCount > 1) {
-                                _currentScaleDelta = details.scale;
-                                // We intentionally do NOT update _currentDragOffset here
-                                // to prevent the image from moving while resizing.
-                              } else {
-                                // If using 1 finger, it's a drag -> Update Position Only
+                              // Only handle single-finger drags
+                              // Ignore multi-finger gestures (zoom) to prevent item resizing
+                              if (details.pointerCount == 1) {
                                 _currentDragOffset =
                                     details.localFocalPoint -
                                     _dragStartLocalPosition!;
@@ -127,7 +121,6 @@ class _InteractiveBoardCanvasState
                               final updatedItem = item.copyWith(
                                 x: item.x + (_currentDragOffset?.dx ?? 0.0),
                                 y: item.y + (_currentDragOffset?.dy ?? 0.0),
-                                scale: item.scale * _currentScaleDelta,
                               );
 
                               final newItems = List<BoardItem>.from(
@@ -145,7 +138,6 @@ class _InteractiveBoardCanvasState
                             setState(() {
                               _dragStartLocalPosition = null;
                               _currentDragOffset = null;
-                              _currentScaleDelta = 1.0;
                             });
                           }
                         }
@@ -161,9 +153,6 @@ class _InteractiveBoardCanvasState
                           additionalOffset: isSelected
                               ? _currentDragOffset
                               : null,
-                          additionalScale: isSelected
-                              ? _currentScaleDelta
-                              : 1.0,
                           onSelect: () {
                             ref
                                 .read(selectedItemIdProvider.notifier)
