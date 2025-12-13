@@ -6,7 +6,7 @@ part of 'canvas_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$selectedItemIdHash() => r'6007f768884512f5225740714752382bacce8718';
+String _$selectedItemIdHash() => r'7dd98f304efcbdf20d0f33493bc460ff84f4981b';
 
 /// See also [SelectedItemId].
 @ProviderFor(SelectedItemId)

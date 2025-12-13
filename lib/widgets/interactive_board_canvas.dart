@@ -53,7 +53,8 @@ class _InteractiveBoardCanvasState
           final x = -canvasSize / 2 + viewportWidth / 2;
           final y = -canvasSize / 2 + viewportHeight / 2;
 
-          _transformationController.value = Matrix4.identity()..translate(x, y);
+          _transformationController.value = Matrix4.identity()
+            ..translateByDouble(x, y, 0.0, 1.0);
         }
 
         return Stack(
@@ -84,7 +85,7 @@ class _InteractiveBoardCanvasState
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
-                    ref.read(selectedItemIdProvider.notifier).state = null;
+                    ref.read(selectedItemIdProvider.notifier).clear();
                   },
                   onScaleStart: selectedItemId != null
                       ? (details) {
@@ -164,8 +165,9 @@ class _InteractiveBoardCanvasState
                               ? _currentScaleDelta
                               : 1.0,
                           onSelect: () {
-                            ref.read(selectedItemIdProvider.notifier).state =
-                                item.id;
+                            ref
+                                .read(selectedItemIdProvider.notifier)
+                                .select(item.id);
 
                             // Move the item to the end of the list (render on top)
                             // Only if it's not already the last one

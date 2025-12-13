@@ -7,5 +7,13 @@ part 'canvas_provider.g.dart';
 class SelectedItemId extends _$SelectedItemId {
   @override
   String? build() => null;
+
+  void select(String? itemId) {
+    state = itemId;
+  }
+
+  void clear() {
+    state = null;
+  }
 }
 
