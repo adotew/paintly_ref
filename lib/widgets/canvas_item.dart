@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/board.dart';
 import '../models/board_item.dart';
 import '../state/board_provider.dart';
 import '../state/canvas_provider.dart';
@@ -8,27 +9,36 @@ import 'corner_handles.dart';
 
 /// Custom painter for corner resize handles that wrap around corners
 
-class CanvasItem extends ConsumerWidget {
+class CanvasItem extends ConsumerStatefulWidget {
   final BoardItem item;
-  final Offset? additionalOffset;
+  final Board board;
   final double additionalScale;
   final VoidCallback? onSelect;
 
   const CanvasItem({
     super.key,
     required this.item,
-    this.additionalOffset,
+    required this.board,
     this.additionalScale = 1.0,
     this.onSelect,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isSelected = ref.watch(selectedItemIdProvider) == item.id;
+  ConsumerState<CanvasItem> createState() => _CanvasItemState();
+}
 
-    final displayX = item.x + (additionalOffset?.dx ?? 0.0);
-    final displayY = item.y + (additionalOffset?.dy ?? 0.0);
-    final displayScale = item.scale * additionalScale;
+class _CanvasItemState extends ConsumerState<CanvasItem> {
+  // Gesture state for dragging this item
+  Offset? _dragStartLocalPosition;
+  Offset? _currentDragOffset;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = ref.watch(selectedItemIdProvider) == widget.item.id;
+
+    final displayX = widget.item.x + (_currentDragOffset?.dx ?? 0.0);
+    final displayY = widget.item.y + (_currentDragOffset?.dy ?? 0.0);
+    final displayScale = widget.item.scale * widget.additionalScale;
 
     // Scale border properties proportionally with the image size
     final baseBorderRadius = 21.0;
@@ -42,15 +52,66 @@ class CanvasItem extends ConsumerWidget {
       top: 3500 + displayY,
       child: RepaintBoundary(
         child: GestureDetector(
-          onTap: onSelect,
+          onTap: widget.onSelect,
+          // Only enable drag gestures when this item is selected
+          onScaleStart: isSelected
+              ? (details) {
+                  setState(() {
+                    _dragStartLocalPosition = details.localFocalPoint;
+                    _currentDragOffset = Offset.zero;
+                  });
+                }
+              : null,
+          onScaleUpdate: isSelected
+              ? (details) {
+                  if (_dragStartLocalPosition != null) {
+                    setState(() {
+                      // Only handle single-finger drags
+                      // Ignore multi-finger gestures (zoom) to prevent item resizing
+                      if (details.pointerCount == 1) {
+                        _currentDragOffset =
+                            details.localFocalPoint - _dragStartLocalPosition!;
+                      }
+                    });
+                  }
+                }
+              : null,
+          onScaleEnd: isSelected
+              ? (details) {
+                  if (_dragStartLocalPosition != null) {
+                    // Find this item in the board
+                    final itemIndex = widget.board.items.indexWhere(
+                      (i) => i.id == widget.item.id,
+                    );
+                    if (itemIndex != -1) {
+                      final updatedItem = widget.item.copyWith(
+                        x: widget.item.x + (_currentDragOffset?.dx ?? 0.0),
+                        y: widget.item.y + (_currentDragOffset?.dy ?? 0.0),
+                      );
+
+                      final newItems = List<BoardItem>.from(widget.board.items);
+                      newItems[itemIndex] = updatedItem;
+
+                      ref
+                          .read(boardListProvider.notifier)
+                          .updateBoard(widget.board.copyWith(items: newItems));
+                    }
+
+                    setState(() {
+                      _dragStartLocalPosition = null;
+                      _currentDragOffset = null;
+                    });
+                  }
+                }
+              : null,
           child: Transform.rotate(
-            angle: item.rotation,
+            angle: widget.item.rotation,
             child: Stack(
               children: [
                 // Image container (full size, no border)
                 Container(
-                  width: item.width * displayScale,
-                  height: item.height * displayScale,
+                  width: widget.item.width * displayScale,
+                  height: widget.item.height * displayScale,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(scaledBorderRadius),
                   ),
@@ -62,8 +123,8 @@ class CanvasItem extends ConsumerWidget {
                 // Border overlay (only when selected)
                 if (isSelected)
                   Container(
-                    width: item.width * displayScale,
-                    height: item.height * displayScale,
+                    width: widget.item.width * displayScale,
+                    height: widget.item.height * displayScale,
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: Colors.blueAccent,
@@ -76,8 +137,8 @@ class CanvasItem extends ConsumerWidget {
                 if (isSelected)
                   CustomPaint(
                     size: Size(
-                      item.width * displayScale,
-                      item.height * displayScale,
+                      widget.item.width * displayScale,
+                      widget.item.height * displayScale,
                     ),
                     painter: CornerHandlePainter(
                       handleLength: 12.0 * displayScale,
@@ -95,8 +156,8 @@ class CanvasItem extends ConsumerWidget {
   }
 
   Widget _buildImageContent(WidgetRef ref) {
-    if (item.imageSource.startsWith('http')) {
-      return Image.network(item.imageSource, fit: BoxFit.cover);
+    if (widget.item.imageSource.startsWith('http')) {
+      return Image.network(widget.item.imageSource, fit: BoxFit.cover);
     }
 
     // Relative Pfade (neu): Wir müssen das Dokumenten-Verzeichnis holen
@@ -104,7 +165,7 @@ class CanvasItem extends ConsumerWidget {
 
     return appDirAsync.when(
       data: (dir) {
-        final fullPath = '${dir.path}/${item.imageSource}';
+        final fullPath = '${dir.path}/${widget.item.imageSource}';
         final file = File(fullPath);
         if (file.existsSync()) {
           return Image.file(

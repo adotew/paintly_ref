@@ -21,10 +21,6 @@ class _InteractiveBoardCanvasState
     extends ConsumerState<InteractiveBoardCanvas> {
   late TransformationController _transformationController;
 
-  // Gesture state for the selected item
-  Offset? _dragStartLocalPosition;
-  Offset? _currentDragOffset;
-
   @override
   void initState() {
     super.initState();
@@ -86,73 +82,13 @@ class _InteractiveBoardCanvasState
                   onTap: () {
                     ref.read(selectedItemIdProvider.notifier).clear();
                   },
-                  onScaleStart: selectedItemId != null
-                      ? (details) {
-                          setState(() {
-                            _dragStartLocalPosition = details.localFocalPoint;
-                            _currentDragOffset = Offset.zero;
-                          });
-                        }
-                      : null,
-                  onScaleUpdate: selectedItemId != null
-                      ? (details) {
-                          if (_dragStartLocalPosition != null) {
-                            setState(() {
-                              // Only handle single-finger drags
-                              // Ignore multi-finger gestures (zoom) to prevent item resizing
-                              if (details.pointerCount == 1) {
-                                _currentDragOffset =
-                                    details.localFocalPoint -
-                                    _dragStartLocalPosition!;
-                              }
-                            });
-                          }
-                        }
-                      : null,
-                  onScaleEnd: selectedItemId != null
-                      ? (details) {
-                          if (_dragStartLocalPosition != null) {
-                            // Find the selected item
-                            final itemIndex = widget.board.items.indexWhere(
-                              (i) => i.id == selectedItemId,
-                            );
-                            if (itemIndex != -1) {
-                              final item = widget.board.items[itemIndex];
-                              final updatedItem = item.copyWith(
-                                x: item.x + (_currentDragOffset?.dx ?? 0.0),
-                                y: item.y + (_currentDragOffset?.dy ?? 0.0),
-                              );
-
-                              final newItems = List<BoardItem>.from(
-                                widget.board.items,
-                              );
-                              newItems[itemIndex] = updatedItem;
-
-                              ref
-                                  .read(boardListProvider.notifier)
-                                  .updateBoard(
-                                    widget.board.copyWith(items: newItems),
-                                  );
-                            }
-
-                            setState(() {
-                              _dragStartLocalPosition = null;
-                              _currentDragOffset = null;
-                            });
-                          }
-                        }
-                      : null,
                   child: Stack(
                     children: [
                       // The Items
                       ...widget.board.items.map((item) {
-                        final isSelected = item.id == selectedItemId;
                         return CanvasItem(
                           item: item,
-                          // Only pass offsets if this is the selected item
-                          additionalOffset: isSelected
-                              ? _currentDragOffset
-                              : null,
+                          board: widget.board,
                           onSelect: () {
                             ref
                                 .read(selectedItemIdProvider.notifier)
