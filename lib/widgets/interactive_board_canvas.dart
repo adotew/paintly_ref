@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board.dart';
 import '../models/board_item.dart';
 import '../state/board_provider.dart';
-import '../screens/canvas_screen.dart'; // For selectedItemIdProvider
+import '../state/canvas_provider.dart';
 import 'canvas_item.dart';
 import 'grid_painter.dart';
 
@@ -157,10 +157,12 @@ class _InteractiveBoardCanvasState
                         return CanvasItem(
                           item: item,
                           // Only pass offsets if this is the selected item
-                          additionalOffset:
-                              isSelected ? _currentDragOffset : null,
-                          additionalScale:
-                              isSelected ? _currentScaleDelta : 1.0,
+                          additionalOffset: isSelected
+                              ? _currentDragOffset
+                              : null,
+                          additionalScale: isSelected
+                              ? _currentScaleDelta
+                              : 1.0,
                           onSelect: () {
                             ref.read(selectedItemIdProvider.notifier).state =
                                 item.id;
@@ -195,4 +197,3 @@ class _InteractiveBoardCanvasState
     );
   }
 }
-

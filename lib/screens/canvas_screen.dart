@@ -3,27 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board.dart';
 import '../models/board_item.dart';
 import '../state/board_provider.dart';
+import '../state/canvas_provider.dart';
 import '../services/image_service.dart';
 import '../widgets/interactive_board_canvas.dart';
 import '../widgets/image_toolbar.dart';
-
-// Provider for the currently selected board (set via .family or override)
-// For simplicity, we use a StateProvider here that holds the ID.
-final activeBoardIdProvider = StateProvider<String?>((ref) => null);
-
-// A provider that delivers the current Board object based on the ID
-final activeBoardProvider = Provider<Board?>((ref) {
-  final id = ref.watch(activeBoardIdProvider);
-  final boards = ref.watch(boardListProvider);
-  if (id == null) return null;
-  try {
-    return boards.firstWhere((b) => b.id == id);
-  } catch (_) {
-    return null;
-  }
-});
-
-final selectedItemIdProvider = StateProvider<String?>((ref) => null);
 
 class CanvasScreen extends ConsumerStatefulWidget {
   final String boardId;

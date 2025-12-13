@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board_item.dart';
 import '../state/board_provider.dart';
-import '../screens/canvas_screen.dart';
-import 'corner_handles.dart'; // For selectedItemIdProvider
+import '../state/canvas_provider.dart';
+import 'corner_handles.dart';
 
 /// Custom painter for corner resize handles that wrap around corners
 

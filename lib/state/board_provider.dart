@@ -1,47 +1,56 @@
 import 'dart:io';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/board.dart';
 import '../services/storage_service.dart';
 
+part 'board_provider.g.dart';
+
 // Provider für den StorageService (Single Source of Truth für die Datenbank-Instanz)
-final storageServiceProvider = Provider<StorageService>((ref) {
+@Riverpod(keepAlive: true)
+StorageService storageService(StorageServiceRef ref) {
   return StorageService();
-});
+}
 
 // Provider für das Dokumenten-Verzeichnis (für Bilder)
-final appDocumentsDirectoryProvider = FutureProvider<Directory>((ref) async {
+@riverpod
+Future<Directory> appDocumentsDirectory(AppDocumentsDirectoryRef ref) async {
   return await getApplicationDocumentsDirectory();
-});
+}
 
 // Provider, der den asynchronen Start der App (Hive Init) darstellt
-final initializationProvider = FutureProvider<void>((ref) async {
+@riverpod
+Future<void> initialization(InitializationRef ref) async {
   final storageService = ref.read(storageServiceProvider);
   await storageService.init();
-});
+}
 
 // Der Haupt-Provider für die Liste der Boards
-class BoardListNotifier extends StateNotifier<List<Board>> {
-  final StorageService _storageService;
-
-  BoardListNotifier(this._storageService) : super([]) {
-    _loadBoards();
+@Riverpod(keepAlive: true)
+class BoardList extends _$BoardList {
+  @override
+  List<Board> build() {
+    final storageService = ref.read(storageServiceProvider);
+    _loadBoards(storageService);
+    return [];
   }
 
-  void _loadBoards() async {
-    state = await Future.value(_storageService.getAllBoards());
+  void _loadBoards(StorageService storageService) async {
+    state = await Future.value(storageService.getAllBoards());
   }
 
   Future<Board> addBoard(String name) async {
+    final storageService = ref.read(storageServiceProvider);
     final newBoard = Board(name: name);
-    await _storageService.saveBoard(newBoard);
+    await storageService.saveBoard(newBoard);
     // Wir laden neu oder fügen lokal hinzu. Da Board immutable ist, fügen wir es der Liste hinzu.
     state = [...state, newBoard];
     return newBoard;
   }
 
   Future<void> updateBoard(Board updatedBoard) async {
-    await _storageService.saveBoard(updatedBoard);
+    final storageService = ref.read(storageServiceProvider);
+    await storageService.saveBoard(updatedBoard);
     state = [
       for (final board in state)
         if (board.id == updatedBoard.id) updatedBoard else board,
@@ -49,15 +58,8 @@ class BoardListNotifier extends StateNotifier<List<Board>> {
   }
 
   Future<void> deleteBoard(String id) async {
-    await _storageService.deleteBoard(id);
+    final storageService = ref.read(storageServiceProvider);
+    await storageService.deleteBoard(id);
     state = state.where((b) => b.id != id).toList();
   }
 }
-
-// Der eigentliche Provider, den die UI nutzen wird
-final boardListProvider = StateNotifierProvider<BoardListNotifier, List<Board>>(
-  (ref) {
-    final storageService = ref.watch(storageServiceProvider);
-    return BoardListNotifier(storageService);
-  },
-);
