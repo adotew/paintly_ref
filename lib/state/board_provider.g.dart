@@ -53,7 +53,7 @@ final initializationProvider = AutoDisposeFutureProvider<void>.internal(
 );
 
 typedef InitializationRef = AutoDisposeFutureProviderRef<void>;
-String _$boardListHash() => r'183b2b0b982b0073af7894f034e8ebbf2d0b0eb6';
+String _$boardListHash() => r'1bd3058bbfc6b684ef0a10b1f5e6af97bf7514e8';
 
 /// See also [BoardList].
 @ProviderFor(BoardList)

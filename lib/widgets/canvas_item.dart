@@ -74,48 +74,51 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
           onScaleEnd: isSelected ? _onScaleEnd : null,
           child: Transform.rotate(
             angle: widget.item.rotation,
-            child: Stack(
-              children: [
-                // Image container
-                Container(
-                  width: currentWidth * displayScale,
-                  height: currentHeight * displayScale,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(scaledBorderRadius),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(scaledBorderRadius),
-                    child: _buildImageContent(ref),
-                  ),
-                ),
-                // Border overlay (only when selected)
-                if (isSelected)
+            child: Transform.scale(
+              scaleX: widget.item.flipHorizontal ? -1.0 : 1.0,
+              child: Stack(
+                children: [
+                  // Image container
                   Container(
                     width: currentWidth * displayScale,
                     height: currentHeight * displayScale,
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.blueAccent,
-                        width: scaledBorderWidth,
-                      ),
                       borderRadius: BorderRadius.circular(scaledBorderRadius),
                     ),
-                  ),
-                // Corner resize handles (only when selected)
-                if (isSelected)
-                  CustomPaint(
-                    size: Size(
-                      currentWidth * displayScale,
-                      currentHeight * displayScale,
-                    ),
-                    painter: CornerHandlePainter(
-                      handleLength: 12.0 * displayScale,
-                      handleThickness: 8.0 * displayScale,
-                      handleColor: const Color.fromARGB(255, 235, 235, 235),
-                      borderRadius: scaledBorderRadius,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(scaledBorderRadius),
+                      child: _buildImageContent(ref),
                     ),
                   ),
-              ],
+                  // Border overlay (only when selected)
+                  if (isSelected)
+                    Container(
+                      width: currentWidth * displayScale,
+                      height: currentHeight * displayScale,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.blueAccent,
+                          width: scaledBorderWidth,
+                        ),
+                        borderRadius: BorderRadius.circular(scaledBorderRadius),
+                      ),
+                    ),
+                  // Corner resize handles (only when selected)
+                  if (isSelected)
+                    CustomPaint(
+                      size: Size(
+                        currentWidth * displayScale,
+                        currentHeight * displayScale,
+                      ),
+                      painter: CornerHandlePainter(
+                        handleLength: 12.0 * displayScale,
+                        handleThickness: 8.0 * displayScale,
+                        handleColor: const Color.fromARGB(255, 235, 235, 235),
+                        borderRadius: scaledBorderRadius,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

@@ -29,6 +29,9 @@ class BoardItem {
   @HiveField(7)
   final double height; // Ursprüngliche Höhe
 
+  @HiveField(8)
+  final bool flipHorizontal; // Horizontal gespiegelt
+
   BoardItem({
     String? id,
     required this.imageSource,
@@ -38,6 +41,7 @@ class BoardItem {
     this.rotation = 0.0,
     this.width = 100.0,
     this.height = 100.0,
+    this.flipHorizontal = false,
   }) : id = id ?? const Uuid().v4();
 
   BoardItem copyWith({
@@ -48,6 +52,7 @@ class BoardItem {
     double? rotation,
     double? width,
     double? height,
+    bool? flipHorizontal,
   }) {
     return BoardItem(
       id: id,
@@ -58,7 +63,7 @@ class BoardItem {
       rotation: rotation ?? this.rotation,
       width: width ?? this.width,
       height: height ?? this.height,
+      flipHorizontal: flipHorizontal ?? this.flipHorizontal,
     );
   }
 }
-

@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../state/board_provider.dart';
+import '../state/canvas_provider.dart';
 
-class ImageToolbar extends StatelessWidget {
+class ImageToolbar extends ConsumerWidget {
   final bool isVisible;
+  final String boardId;
 
-  const ImageToolbar({super.key, required this.isVisible});
+  const ImageToolbar({
+    super.key,
+    required this.isVisible,
+    required this.boardId,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedItemId = ref.watch(selectedItemIdProvider);
+
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
@@ -41,30 +51,26 @@ class ImageToolbar extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _ToolbarButton(icon: Icons.format_bold, isActive: false),
+                      // Löschen
                       _ToolbarButton(
-                        icon: Icons.format_italic,
-                        isActive: false,
+                        icon: Icons.delete,
+                        onTap: () => _onDelete(context, ref, selectedItemId),
+                        tooltip: 'Löschen',
                       ),
+                      const SizedBox(width: 4),
+                      // Duplizieren
                       _ToolbarButton(
-                        icon: Icons.format_underlined,
-                        isActive: false,
+                        icon: Icons.content_copy,
+                        onTap: () => _onDuplicate(ref, selectedItemId),
+                        tooltip: 'Duplizieren',
                       ),
+                      const SizedBox(width: 4),
+                      // Flip horizontal
                       _ToolbarButton(
-                        icon: Icons.strikethrough_s,
-                        isActive: false,
+                        icon: Icons.flip,
+                        onTap: () => _onFlipHorizontal(ref, selectedItemId),
+                        tooltip: 'Horizontal spiegeln',
                       ),
-                      _ToolbarButton(
-                        icon: Icons.format_color_text,
-                        isActive: false,
-                      ),
-                      _ToolbarButton(
-                        icon: Icons.format_color_fill,
-                        isActive: false,
-                      ),
-                      _ToolbarButton(icon: Icons.link, isActive: false),
-                      _ToolbarButton(icon: Icons.image, isActive: true),
-                      _ToolbarButton(icon: Icons.code, isActive: false),
                     ],
                   ),
                 ),
@@ -75,60 +81,77 @@ class ImageToolbar extends StatelessWidget {
       ),
     );
   }
+
+  void _onDelete(BuildContext context, WidgetRef ref, String? itemId) {
+    if (itemId == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bild löschen?'),
+        content: const Text('Möchten Sie dieses Bild wirklich löschen?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref
+                  .read(boardListProvider.notifier)
+                  .deleteItemFromBoard(boardId, itemId);
+              ref.read(selectedItemIdProvider.notifier).clear();
+              Navigator.pop(context);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Löschen'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onDuplicate(WidgetRef ref, String? itemId) {
+    if (itemId == null) return;
+    ref.read(boardListProvider.notifier).duplicateItem(boardId, itemId);
+  }
+
+  void _onFlipHorizontal(WidgetRef ref, String? itemId) {
+    if (itemId == null) return;
+    ref.read(boardListProvider.notifier).flipItemHorizontal(boardId, itemId);
+  }
 }
 
-class _ToolbarButton extends StatefulWidget {
+class _ToolbarButton extends StatelessWidget {
   final IconData icon;
-  final bool isActive;
+  final VoidCallback? onTap;
+  final String? tooltip;
 
-  const _ToolbarButton({required this.icon, required this.isActive});
-
-  @override
-  State<_ToolbarButton> createState() => _ToolbarButtonState();
-}
-
-class _ToolbarButtonState extends State<_ToolbarButton> {
-  late bool _isToggled;
-
-  @override
-  void initState() {
-    super.initState();
-    _isToggled = widget.isActive;
-  }
-
-  @override
-  void didUpdateWidget(_ToolbarButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.isActive != widget.isActive) {
-      _isToggled = widget.isActive;
-    }
-  }
+  const _ToolbarButton({required this.icon, this.onTap, this.tooltip});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _isToggled = !_isToggled;
-          });
-        },
-        borderRadius: BorderRadius.circular(8.0),
-        child: Padding(
-          padding: const EdgeInsetsGeometry.fromLTRB(2.0, 0.0, 2.0, 0.0),
-          child: Container(
-            padding: const EdgeInsetsGeometry.fromLTRB(12.0, 12.0, 12.0, 12.0),
-            decoration: BoxDecoration(
-              color: _isToggled
-                  ? const Color.fromARGB(255, 66, 66, 66)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Icon(
-              widget.icon,
-              size: 24.0,
-              color: _isToggled ? Colors.white : Colors.grey[400],
+    return Tooltip(
+      message: tooltip ?? '',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8.0),
+          child: Padding(
+            padding: const EdgeInsetsGeometry.fromLTRB(2.0, 0.0, 2.0, 0.0),
+            child: Container(
+              padding: const EdgeInsetsGeometry.fromLTRB(
+                12.0,
+                12.0,
+                12.0,
+                12.0,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Icon(icon, size: 24.0, color: Colors.grey[300]),
             ),
           ),
         ),

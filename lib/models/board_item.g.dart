@@ -25,13 +25,15 @@ class BoardItemAdapter extends TypeAdapter<BoardItem> {
       rotation: fields[5] as double,
       width: fields[6] as double,
       height: fields[7] as double,
+      // Migration: Alte Daten haben kein flipHorizontal Feld, verwende Default false
+      flipHorizontal: fields[8] as bool? ?? false,
     );
   }
 
   @override
   void write(BinaryWriter writer, BoardItem obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +49,9 @@ class BoardItemAdapter extends TypeAdapter<BoardItem> {
       ..writeByte(6)
       ..write(obj.width)
       ..writeByte(7)
-      ..write(obj.height);
+      ..write(obj.height)
+      ..writeByte(8)
+      ..write(obj.flipHorizontal);
   }
 
   @override

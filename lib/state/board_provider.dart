@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/board.dart';
+import '../models/board_item.dart';
 import '../services/storage_service.dart';
 
 part 'board_provider.g.dart';
@@ -61,5 +62,50 @@ class BoardList extends _$BoardList {
     final storageService = ref.read(storageServiceProvider);
     await storageService.deleteBoard(id);
     state = state.where((b) => b.id != id).toList();
+  }
+
+  // Löscht ein Item aus einem Board
+  Future<void> deleteItemFromBoard(String boardId, String itemId) async {
+    final board = state.firstWhere((b) => b.id == boardId);
+    final updatedItems = board.items
+        .where((item) => item.id != itemId)
+        .toList();
+    final updatedBoard = board.copyWith(items: updatedItems);
+    await updateBoard(updatedBoard);
+  }
+
+  // Dupliziert ein Item in einem Board
+  Future<void> duplicateItem(String boardId, String itemId) async {
+    final board = state.firstWhere((b) => b.id == boardId);
+    final itemIndex = board.items.indexWhere((item) => item.id == itemId);
+
+    if (itemIndex == -1) return;
+
+    final originalItem = board.items[itemIndex];
+    // Neues Item mit leichtem Offset erstellen
+    final duplicatedItem = originalItem.copyWith(
+      x: originalItem.x + 20,
+      y: originalItem.y + 20,
+    );
+
+    final updatedItems = List<BoardItem>.from(board.items)..add(duplicatedItem);
+    final updatedBoard = board.copyWith(items: updatedItems);
+    await updateBoard(updatedBoard);
+  }
+
+  // Spiegelt ein Item horizontal
+  Future<void> flipItemHorizontal(String boardId, String itemId) async {
+    final board = state.firstWhere((b) => b.id == boardId);
+    final itemIndex = board.items.indexWhere((item) => item.id == itemId);
+
+    if (itemIndex == -1) return;
+
+    final item = board.items[itemIndex];
+    final flippedItem = item.copyWith(flipHorizontal: !item.flipHorizontal);
+
+    final updatedItems = List<BoardItem>.from(board.items);
+    updatedItems[itemIndex] = flippedItem;
+    final updatedBoard = board.copyWith(items: updatedItems);
+    await updateBoard(updatedBoard);
   }
 }

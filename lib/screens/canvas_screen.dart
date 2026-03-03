@@ -86,7 +86,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
           InteractiveBoardCanvas(board: board),
 
           // Image Toolbar - appears when an image is selected
-          ImageToolbar(isVisible: selectedItemId != null),
+          ImageToolbar(isVisible: selectedItemId != null, boardId: board.id),
         ],
       ),
     );
