@@ -63,12 +63,6 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               icon: const Icon(Icons.arrow_back_ios_new),
               onPressed: () => Navigator.pop(context),
             ),
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                // TODO: Implement pen/drawing functionality
-              },
-            ),
           ],
         ),
       ),
