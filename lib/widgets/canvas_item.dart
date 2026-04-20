@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board.dart';
@@ -56,12 +57,17 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     final displayX = currentX + (_currentDragOffset?.dx ?? 0.0);
     final displayY = currentY + (_currentDragOffset?.dy ?? 0.0);
 
-    // Scale border properties proportionally with the image size
-    final baseBorderRadius = 21.0;
-    final baseBorderWidth = 3.0;
+    // Derive selection chrome dimensions from the item's actual visible
+    // size so border + handles stay visually balanced as the item is
+    // resized (clamped so they neither vanish nor dominate at extremes).
+    final visualWidth = currentWidth * displayScale;
+    final visualHeight = currentHeight * displayScale;
+    final referenceSize = math.min(visualWidth, visualHeight);
 
-    final scaledBorderRadius = baseBorderRadius * displayScale;
-    final scaledBorderWidth = baseBorderWidth * displayScale;
+    final scaledBorderWidth = (referenceSize * 0.015).clamp(2.0, 5.0);
+    final scaledBorderRadius = (referenceSize * 0.07).clamp(8.0, 28.0);
+    final scaledHandleLength = (referenceSize * 0.09).clamp(10.0, 22.0);
+    final scaledHandleThickness = (referenceSize * 0.05).clamp(6.0, 12.0);
 
     return Positioned(
       left: 3500 + displayX,
@@ -111,8 +117,8 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
                         currentHeight * displayScale,
                       ),
                       painter: CornerHandlePainter(
-                        handleLength: 12.0 * displayScale,
-                        handleThickness: 8.0 * displayScale,
+                        handleLength: scaledHandleLength,
+                        handleThickness: scaledHandleThickness,
                         handleColor: const Color.fromARGB(255, 235, 235, 235),
                         borderRadius: scaledBorderRadius,
                       ),

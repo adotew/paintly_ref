@@ -19,7 +19,7 @@ class MainApp extends ConsumerWidget {
     final initStatus = ref.watch(initializationProvider);
 
     return MaterialApp(
-      title: 'PaintlyRef',
+      title: 'Reffect',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

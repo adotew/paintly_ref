@@ -221,6 +221,12 @@ class _ImagePreviewGrid extends StatelessWidget {
       return FutureBuilder<String>(
         future: _getImagePath(itemsToShow[0].imageSource),
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Container(
+              color: Colors.grey[800],
+              child: const Icon(Icons.broken_image, size: 48, color: Colors.white24),
+            );
+          }
           if (snapshot.hasData && snapshot.data != null) {
             return Image.file(
               File(snapshot.data!),

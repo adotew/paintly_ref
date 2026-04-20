@@ -139,14 +139,9 @@ class _ToolbarButton extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(8.0),
           child: Padding(
-            padding: const EdgeInsetsGeometry.fromLTRB(2.0, 0.0, 2.0, 0.0),
+            padding: const EdgeInsets.symmetric(horizontal: 2.0),
             child: Container(
-              padding: const EdgeInsetsGeometry.fromLTRB(
-                12.0,
-                12.0,
-                12.0,
-                12.0,
-              ),
+              padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(8.0),

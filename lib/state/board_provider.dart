@@ -32,12 +32,7 @@ class BoardList extends _$BoardList {
   @override
   List<Board> build() {
     final storageService = ref.read(storageServiceProvider);
-    _loadBoards(storageService);
-    return [];
-  }
-
-  void _loadBoards(StorageService storageService) async {
-    state = await Future.value(storageService.getAllBoards());
+    return storageService.getAllBoards();
   }
 
   Future<Board> addBoard(String name) async {

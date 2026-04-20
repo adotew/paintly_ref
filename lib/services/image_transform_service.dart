@@ -152,9 +152,10 @@ class ImageTransformService {
     return ResizeResult(x: newX, y: newY, width: newWidth, height: newHeight);
   }
 
-  /// Berechnet die Hit-Area-Größe basierend auf dem aktuellen Scale
+  /// Berechnet die Hit-Area-Größe basierend auf dem aktuellen Scale.
+  /// Floor liegt bei 44pt (Apple HIG Minimum für Touch-Targets), damit
+  /// Corner-Handles auf iPad zuverlässig greifbar bleiben.
   static double getHitAreaSize(double scale) {
-    // Größere Hit-Area bei kleineren Items, mindestens 30 logische Pixel
-    return (40.0 * scale).clamp(30.0, 60.0);
+    return (44.0 * scale).clamp(44.0, 72.0);
   }
 }
