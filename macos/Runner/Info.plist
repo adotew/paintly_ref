@@ -29,6 +29,6 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>PaintlyRef needs access to your photo library to add images to your moodboard.</string>
+	<string>Reffect needs access to your photo library to add images to your moodboard.</string>
 </dict>
 </plist>

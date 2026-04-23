@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Paintly Ref</string>
+	<string>Reffect</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>paintly_ref</string>
+	<string>Reffect</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -27,11 +27,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>PaintlyRef needs access to your camera to take photos for your moodboard.</string>
+	<string>Reffect needs access to your camera to take photos for your moodboard.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>PaintlyRef needs access to microphone for video recording.</string>
+	<string>Reffect needs access to microphone for video recording.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>PaintlyRef needs access to your photo library to add images to your moodboard.</string>
+	<string>Reffect needs access to your photo library to add images to your moodboard.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

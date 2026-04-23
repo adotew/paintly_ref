@@ -39,13 +39,7 @@ class BoardOverviewScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SvgPicture.asset(
-                    'assets/PaintlyRef.svg',
-                    width: 150,
-                    fit: BoxFit.contain,
-                    alignment: Alignment.centerLeft,
-                  ),
-                  Padding(
+                 Padding(
                     padding: const EdgeInsets.fromLTRB(16.0, 0.0, 8.0, 0.0),
                     child: IconButton(
                       onPressed: () => _createBoard(context, ref),
@@ -64,18 +58,30 @@ class BoardOverviewScreen extends ConsumerWidget {
               ),
             ),
             Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(32.0),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4, // Tablet/Phone adjustment could go here
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 1,
-                ),
-                itemCount: boards.length,
-                itemBuilder: (context, index) {
-                  final board = boards[index];
-                  return _BoardCard(board: board);
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final width = constraints.maxWidth;
+                  final crossAxisCount = width < 400
+                      ? 2
+                      : width < 600
+                          ? 3
+                          : width < 900
+                              ? 4
+                              : 5;
+                  return GridView.builder(
+                    padding: const EdgeInsets.all(32.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: boards.length,
+                    itemBuilder: (context, index) {
+                      final board = boards[index];
+                      return _BoardCard(board: board);
+                    },
+                  );
                 },
               ),
             ),
