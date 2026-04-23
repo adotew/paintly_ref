@@ -32,6 +32,18 @@ class BoardItem {
   @HiveField(8)
   final bool flipHorizontal; // Horizontal gespiegelt
 
+  @HiveField(9)
+  final bool isBlackAndWhite;
+
+  @HiveField(10)
+  final bool isBlurred;
+
+  @HiveField(11)
+  final bool isPosterized;
+
+  @HiveField(12)
+  final double posterizationLevels;
+
   BoardItem({
     String? id,
     required this.imageSource,
@@ -42,6 +54,10 @@ class BoardItem {
     this.width = 100.0,
     this.height = 100.0,
     this.flipHorizontal = false,
+    this.isBlackAndWhite = false,
+    this.isBlurred = false,
+    this.isPosterized = false,
+    this.posterizationLevels = 0.0,
   }) : id = id ?? const Uuid().v4();
 
   BoardItem copyWith({
@@ -53,6 +69,10 @@ class BoardItem {
     double? width,
     double? height,
     bool? flipHorizontal,
+    bool? isBlackAndWhite,
+    bool? isBlurred,
+    bool? isPosterized,
+    double? posterizationLevels,
   }) {
     return BoardItem(
       id: id,
@@ -64,6 +84,10 @@ class BoardItem {
       width: width ?? this.width,
       height: height ?? this.height,
       flipHorizontal: flipHorizontal ?? this.flipHorizontal,
+      isBlackAndWhite: isBlackAndWhite ?? this.isBlackAndWhite,
+      isBlurred: isBlurred ?? this.isBlurred,
+      isPosterized: isPosterized ?? this.isPosterized,
+      posterizationLevels: posterizationLevels ?? this.posterizationLevels,
     );
   }
 }

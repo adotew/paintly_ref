@@ -103,4 +103,44 @@ class BoardList extends _$BoardList {
     final updatedBoard = board.copyWith(items: updatedItems);
     await updateBoard(updatedBoard);
   }
+
+  Future<void> toggleBlackAndWhite(String boardId, String itemId) async {
+    final board = state.firstWhere((b) => b.id == boardId);
+    final itemIndex = board.items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) return;
+    final item = board.items[itemIndex];
+    final updatedItems = List<BoardItem>.from(board.items);
+    updatedItems[itemIndex] = item.copyWith(isBlackAndWhite: !item.isBlackAndWhite);
+    await updateBoard(board.copyWith(items: updatedItems));
+  }
+
+  Future<void> toggleBlur(String boardId, String itemId) async {
+    final board = state.firstWhere((b) => b.id == boardId);
+    final itemIndex = board.items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) return;
+    final item = board.items[itemIndex];
+    final updatedItems = List<BoardItem>.from(board.items);
+    updatedItems[itemIndex] = item.copyWith(isBlurred: !item.isBlurred);
+    await updateBoard(board.copyWith(items: updatedItems));
+  }
+
+  Future<void> togglePosterize(String boardId, String itemId) async {
+    final board = state.firstWhere((b) => b.id == boardId);
+    final itemIndex = board.items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) return;
+    final item = board.items[itemIndex];
+    final updatedItems = List<BoardItem>.from(board.items);
+    updatedItems[itemIndex] = item.copyWith(isPosterized: !item.isPosterized);
+    await updateBoard(board.copyWith(items: updatedItems));
+  }
+
+  Future<void> setPosterizationLevels(String boardId, String itemId, double levels) async {
+    final board = state.firstWhere((b) => b.id == boardId);
+    final itemIndex = board.items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) return;
+    final item = board.items[itemIndex];
+    final updatedItems = List<BoardItem>.from(board.items);
+    updatedItems[itemIndex] = item.copyWith(posterizationLevels: levels);
+    await updateBoard(board.copyWith(items: updatedItems));
+  }
 }

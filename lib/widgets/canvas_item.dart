@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board.dart';
@@ -41,7 +42,36 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
   double? _startY;
   ResizeResult? _currentResize;
 
+  // Shader / ui.Image cache for posterization
+  ui.Image? _cachedUiImage;
+  String? _cachedImagePath;
+  static Future<ui.FragmentProgram>? _posterizeProgramFuture;
+
+  static Future<ui.FragmentProgram> _getPosterizeProgram() =>
+      _posterizeProgramFuture ??=
+          ui.FragmentProgram.fromAsset('shaders/posterize.frag');
+
   bool get _isResizing => _activeHandle != null;
+
+  @override
+  void dispose() {
+    _cachedUiImage?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadUiImage(String fullPath) async {
+    if (_cachedImagePath == fullPath) return;
+    final bytes = await File(fullPath).readAsBytes();
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    if (mounted) {
+      setState(() {
+        _cachedUiImage?.dispose();
+        _cachedUiImage = frame.image;
+        _cachedImagePath = fullPath;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +123,12 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(scaledBorderRadius),
-                      child: _buildImageContent(ref),
+                      child: _buildImageContent(
+                        ref,
+                        currentWidth: currentWidth,
+                        currentHeight: currentHeight,
+                        displayScale: displayScale,
+                      ),
                     ),
                   ),
                   // Border overlay (only when selected)
@@ -253,27 +288,127 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     }
   }
 
-  Widget _buildImageContent(WidgetRef ref) {
-    if (widget.item.imageSource.startsWith('http')) {
-      return Image.network(widget.item.imageSource, fit: BoxFit.cover);
+  Widget _buildImageContent(
+    WidgetRef ref, {
+    required double currentWidth,
+    required double currentHeight,
+    required double displayScale,
+  }) {
+    final item = widget.item;
+
+    if (item.imageSource.startsWith('http')) {
+      Widget image = Image.network(item.imageSource, fit: BoxFit.cover);
+      return _applyEffects(image, item,
+          currentWidth: currentWidth,
+          currentHeight: currentHeight,
+          displayScale: displayScale);
     }
 
     final appDirAsync = ref.watch(appDocumentsDirectoryProvider);
 
     return appDirAsync.when(
       data: (dir) {
-        final fullPath = '${dir.path}/${widget.item.imageSource}';
+        final fullPath = '${dir.path}/${item.imageSource}';
         final file = File(fullPath);
         if (file.existsSync()) {
-          return Image.file(file, fit: BoxFit.cover, cacheWidth: 1000);
+          // Trigger ui.Image load for posterization shader
+          if (item.isPosterized && _cachedImagePath != fullPath) {
+            _loadUiImage(fullPath);
+          }
+          Widget image = Image.file(file, fit: BoxFit.cover, cacheWidth: 1000);
+          return _applyEffects(image, item,
+              currentWidth: currentWidth,
+              currentHeight: currentHeight,
+              displayScale: displayScale,
+              fullPath: fullPath);
         }
         return const Center(
           child: Icon(Icons.broken_image, color: Colors.orange),
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) =>
+      error: (e, s) =>
           const Center(child: Icon(Icons.error, color: Colors.red)),
     );
   }
+
+  Widget _applyEffects(
+    Widget image,
+    BoardItem item, {
+    required double currentWidth,
+    required double currentHeight,
+    required double displayScale,
+    String? fullPath,
+  }) {
+    // Posterize first — B&W and blur wrap on top so they stack correctly
+    if (item.isPosterized && _cachedUiImage != null) {
+      final w = currentWidth * displayScale;
+      final h = currentHeight * displayScale;
+      final cachedImage = _cachedUiImage!;
+      final fallback = image;
+      image = FutureBuilder<ui.FragmentProgram>(
+        future: _getPosterizeProgram(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return fallback;
+          return CustomPaint(
+            painter: _PosterizePainter(
+              program: snapshot.data!,
+              uiImage: cachedImage,
+              levels: item.posterizationLevels,
+            ),
+            size: Size(w, h),
+          );
+        },
+      );
+    }
+
+    if (item.isBlackAndWhite) {
+      image = ColorFiltered(
+        colorFilter: const ColorFilter.matrix([
+          0.299, 0.587, 0.114, 0, 0,
+          0.299, 0.587, 0.114, 0, 0,
+          0.299, 0.587, 0.114, 0, 0,
+          0,     0,     0,     1, 0,
+        ]),
+        child: image,
+      );
+    }
+
+    if (item.isBlurred) {
+      image = ImageFiltered(
+        imageFilter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5, tileMode: TileMode.clamp),
+        child: image,
+      );
+    }
+
+    return image;
+  }
+}
+
+class _PosterizePainter extends CustomPainter {
+  final ui.FragmentProgram program;
+  final ui.Image uiImage;
+  final double levels;
+
+  const _PosterizePainter({
+    required this.program,
+    required this.uiImage,
+    required this.levels,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Invert: slider 1 → 9 levels (subtle), slider 8 → 2 levels (extreme)
+    final actualLevels = levels < 1.0 ? 0.0 : (10.0 - levels);
+    final shader = program.fragmentShader()
+      ..setFloat(0, actualLevels)
+      ..setFloat(1, size.width)
+      ..setFloat(2, size.height)
+      ..setImageSampler(0, uiImage);
+    canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
+  }
+
+  @override
+  bool shouldRepaint(_PosterizePainter old) =>
+      old.levels != levels || old.uiImage != uiImage;
 }
