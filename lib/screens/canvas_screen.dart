@@ -51,33 +51,49 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     final selectedItemId = ref.watch(selectedItemIdProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 50.0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.grey,
-        leadingWidth: 112.0, // Double width for two buttons
-        leading: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: selectedItemId == null
-          ? FloatingActionButton(
-              heroTag: 'add_image',
-              onPressed: () => _pickAndAddImage(context, ref, board),
-              backgroundColor: Colors.grey[800],
-              foregroundColor: Colors.white,
-              child: const Icon(Icons.add),
-            )
-          : null,
       body: Stack(
         children: [
           InteractiveBoardCanvas(board: board),
+
+          // Back button — top left
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_ios_new),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 43, 43, 43),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  fixedSize: const Size(48, 48),
+                ),
+              ),
+            ),
+          ),
+
+          // Add image button — bottom right, hidden when item selected
+          if (selectedItemId == null)
+            Positioned(
+              right: 16,
+              bottom: 32,
+              child: SafeArea(
+                child: IconButton(
+                  onPressed: () => _pickAndAddImage(context, ref, board),
+                  icon: const Icon(Icons.add),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 43, 43, 43),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    fixedSize: const Size(48, 48),
+                  ),
+                ),
+              ),
+            ),
 
           // Image Toolbar - appears when an image is selected
           ImageToolbar(isVisible: selectedItemId != null, boardId: board.id),
