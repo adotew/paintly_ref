@@ -23,7 +23,7 @@ class MainApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        scaffoldBackgroundColor: const Color(0xFF212121),
       ),
       home: initStatus.when(
         data: (_) => const BoardOverviewScreen(),
