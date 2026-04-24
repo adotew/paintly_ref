@@ -7,6 +7,7 @@ import '../state/canvas_provider.dart';
 import '../services/image_service.dart';
 import '../widgets/interactive_board_canvas.dart';
 import '../widgets/image_toolbar.dart';
+import '../widgets/glass_tile.dart';
 
 class CanvasScreen extends ConsumerStatefulWidget {
   final String boardId;
@@ -59,17 +60,11 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: IconButton(
+              child: GlassTile(
+                theWidth: 48,
+                theHeight: 48,
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back_ios_new),
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 43, 43, 43),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  fixedSize: const Size(48, 48),
-                ),
+                theChild: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
               ),
             ),
           ),
@@ -80,17 +75,11 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               right: 16,
               bottom: 32,
               child: SafeArea(
-                child: IconButton(
+                child: GlassTile(
+                  theWidth: 48.0,
+                  theHeight: 48.0,
                   onPressed: () => _pickAndAddImage(context, ref, board),
-                  icon: const Icon(Icons.add),
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 43, 43, 43),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    fixedSize: const Size(48, 48),
-                  ),
+                  theChild: const Icon(Icons.add, color: Colors.white),
                 ),
               ),
             ),

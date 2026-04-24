@@ -23,9 +23,7 @@ class MainApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.blueGrey,
-        brightness: Brightness.dark, // Moodboard apps often look better dark
-        fontFamily: 'Poppins',
+        scaffoldBackgroundColor: const Color(0xFF121212),
       ),
       home: initStatus.when(
         data: (_) => const BoardOverviewScreen(),

@@ -57,7 +57,7 @@ class _InteractiveBoardCanvasState
             // Static Background with Grid
             Positioned.fill(
               child: Container(
-                color: const Color.fromARGB(255, 30, 30, 30),
+                color: const Color(0xFF121212),
                 child: CustomPaint(painter: GridPainter()),
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board_item.dart';
 import '../state/board_provider.dart';
 import '../state/canvas_provider.dart';
+import 'glass_tile.dart';
 
 class ImageToolbar extends ConsumerWidget {
   final bool isVisible;
@@ -40,24 +41,16 @@ class ImageToolbar extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12.0,
-                vertical: 10.0,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(16.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 12.0,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                border: Border.all(color: Colors.grey[800]!, width: 1),
-              ),
-              child: Column(
+            child: IntrinsicWidth(
+              child: IntrinsicHeight(
+                child: GlassTile(
+                  borderRadius: 16.0,
+                  theChild: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 10.0,
+                    ),
+                    child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Posterization slider — expands when posterize is active
@@ -134,8 +127,11 @@ class ImageToolbar extends ConsumerWidget {
             ),
           ),
         ),
+          ),
+        ),
       ),
-    );
+    ),
+  );
   }
 
   void _onDelete(BuildContext context, WidgetRef ref, String? itemId) {

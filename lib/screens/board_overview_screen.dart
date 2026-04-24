@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../state/board_provider.dart';
+import '../widgets/glass_tile.dart';
 import '../models/board.dart';
 import '../models/board_item.dart';
 import 'canvas_screen.dart';
@@ -39,19 +39,13 @@ class BoardOverviewScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                 Padding(
+                  Padding(
                     padding: const EdgeInsets.fromLTRB(16.0, 0.0, 8.0, 0.0),
-                    child: IconButton(
+                    child: GlassTile(
+                      theWidth: 48.0,
+                      theHeight: 48.0,
                       onPressed: () => _createBoard(context, ref),
-                      icon: const Icon(Icons.add),
-                      style: IconButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 43, 43, 43),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        fixedSize: const Size(48, 48),
-                      ),
+                      theChild: const Icon(Icons.add, color: Colors.white),
                     ),
                   ),
                 ],
@@ -64,10 +58,10 @@ class BoardOverviewScreen extends ConsumerWidget {
                   final crossAxisCount = width < 400
                       ? 2
                       : width < 600
-                          ? 3
-                          : width < 900
-                              ? 4
-                              : 5;
+                      ? 3
+                      : width < 900
+                      ? 4
+                      : 5;
                   return GridView.builder(
                     padding: const EdgeInsets.all(32.0),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -230,7 +224,11 @@ class _ImagePreviewGrid extends StatelessWidget {
           if (snapshot.hasError) {
             return Container(
               color: Colors.grey[800],
-              child: const Icon(Icons.broken_image, size: 48, color: Colors.white24),
+              child: const Icon(
+                Icons.broken_image,
+                size: 48,
+                color: Colors.white24,
+              ),
             );
           }
           if (snapshot.hasData && snapshot.data != null) {
