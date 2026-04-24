@@ -55,7 +55,9 @@ class BoardOverviewScreen extends ConsumerWidget {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
-                  final crossAxisCount = width < 400
+                  final crossAxisCount = width < 200
+                      ? 1
+                      : width < 400
                       ? 2
                       : width < 600
                       ? 3

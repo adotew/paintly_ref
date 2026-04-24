@@ -29,6 +29,8 @@ class CanvasItem extends ConsumerStatefulWidget {
 }
 
 class _CanvasItemState extends ConsumerState<CanvasItem> {
+  static const double _handlePadding = 15.0;
+
   // Drag State
   Offset? _dragStartLocalPosition;
   Offset? _currentDragOffset;
@@ -48,8 +50,9 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
   static Future<ui.FragmentProgram>? _posterizeProgramFuture;
 
   static Future<ui.FragmentProgram> _getPosterizeProgram() =>
-      _posterizeProgramFuture ??=
-          ui.FragmentProgram.fromAsset('shaders/posterize.frag');
+      _posterizeProgramFuture ??= ui.FragmentProgram.fromAsset(
+        'shaders/posterize.frag',
+      );
 
   bool get _isResizing => _activeHandle != null;
 
@@ -100,65 +103,71 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     final scaledHandleThickness = (referenceSize * 0.05).clamp(6.0, 12.0);
 
     return Positioned(
-      left: 3500 + displayX,
-      top: 3500 + displayY,
+      left: 3500 + displayX - _handlePadding,
+      top: 3500 + displayY - _handlePadding,
       child: RepaintBoundary(
         child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
           onTap: widget.onSelect,
           onScaleStart: isSelected ? _onScaleStart : null,
           onScaleUpdate: isSelected ? _onScaleUpdate : null,
           onScaleEnd: isSelected ? _onScaleEnd : null,
-          child: Transform.rotate(
-            angle: widget.item.rotation,
-            child: Transform.scale(
-              scaleX: widget.item.flipHorizontal ? -1.0 : 1.0,
-              child: Stack(
-                children: [
-                  // Image container
-                  Container(
-                    width: currentWidth * displayScale,
-                    height: currentHeight * displayScale,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(scaledBorderRadius),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(scaledBorderRadius),
-                      child: _buildImageContent(
-                        ref,
-                        currentWidth: currentWidth,
-                        currentHeight: currentHeight,
-                        displayScale: displayScale,
-                      ),
-                    ),
-                  ),
-                  // Border overlay (only when selected)
-                  if (isSelected)
+          child: Padding(
+            padding: const EdgeInsets.all(_handlePadding),
+            child: Transform.rotate(
+              angle: widget.item.rotation,
+              child: Transform.scale(
+                scaleX: widget.item.flipHorizontal ? -1.0 : 1.0,
+                child: Stack(
+                  children: [
+                    // Image container
                     Container(
                       width: currentWidth * displayScale,
                       height: currentHeight * displayScale,
                       decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.blueAccent,
-                          width: scaledBorderWidth,
-                        ),
                         borderRadius: BorderRadius.circular(scaledBorderRadius),
                       ),
-                    ),
-                  // Corner resize handles (only when selected)
-                  if (isSelected)
-                    CustomPaint(
-                      size: Size(
-                        currentWidth * displayScale,
-                        currentHeight * displayScale,
-                      ),
-                      painter: CornerHandlePainter(
-                        handleLength: scaledHandleLength,
-                        handleThickness: scaledHandleThickness,
-                        handleColor: const Color.fromARGB(255, 235, 235, 235),
-                        borderRadius: scaledBorderRadius,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(scaledBorderRadius),
+                        child: _buildImageContent(
+                          ref,
+                          currentWidth: currentWidth,
+                          currentHeight: currentHeight,
+                          displayScale: displayScale,
+                        ),
                       ),
                     ),
-                ],
+                    // Border overlay (only when selected)
+                    if (isSelected)
+                      Container(
+                        width: currentWidth * displayScale,
+                        height: currentHeight * displayScale,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.blueAccent,
+                            width: scaledBorderWidth,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            scaledBorderRadius,
+                          ),
+                        ),
+                      ),
+                    // Corner resize handles (only when selected)
+                    if (isSelected)
+                      CustomPaint(
+                        size: Size(
+                          currentWidth * displayScale,
+                          currentHeight * displayScale,
+                        ),
+                        painter: CornerHandlePainter(
+                          handleLength: scaledHandleLength,
+                          handleThickness: scaledHandleThickness,
+                          handleColor: const Color.fromARGB(255, 235, 235, 235),
+                          borderRadius: scaledBorderRadius,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -173,9 +182,12 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     final currentHeight = widget.item.height * displayScale;
     final hitAreaSize = ImageTransformService.getHitAreaSize(displayScale);
 
-    // Prüfe ob ein Corner-Handle getroffen wurde
+    // Strip padding offset so hit-test coordinates are relative to image origin
+    final adjustedPosition =
+        details.localFocalPoint - const Offset(_handlePadding, _handlePadding);
+
     final handle = ImageTransformService.hitTestHandle(
-      localPosition: details.localFocalPoint,
+      localPosition: adjustedPosition,
       itemWidth: currentWidth,
       itemHeight: currentHeight,
       hitAreaSize: hitAreaSize,
@@ -185,18 +197,27 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
       // Resize-Modus starten
       setState(() {
         _activeHandle = handle;
-        _resizeStartPosition = details.localFocalPoint;
+        _resizeStartPosition =
+            details.localFocalPoint; // raw; delta cancels padding
         _startWidth = widget.item.width;
         _startHeight = widget.item.height;
         _startX = widget.item.x;
         _startY = widget.item.y;
       });
     } else {
-      // Drag-Modus starten
-      setState(() {
-        _dragStartLocalPosition = details.localFocalPoint;
-        _currentDragOffset = Offset.zero;
-      });
+      // Only drag when touch is inside the image — outer padding ring is resize-only
+      final insideImage =
+          adjustedPosition.dx >= 0 &&
+          adjustedPosition.dy >= 0 &&
+          adjustedPosition.dx <= currentWidth &&
+          adjustedPosition.dy <= currentHeight;
+
+      if (insideImage) {
+        setState(() {
+          _dragStartLocalPosition = details.localFocalPoint;
+          _currentDragOffset = Offset.zero;
+        });
+      }
     }
   }
 
@@ -298,10 +319,13 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
 
     if (item.imageSource.startsWith('http')) {
       Widget image = Image.network(item.imageSource, fit: BoxFit.cover);
-      return _applyEffects(image, item,
-          currentWidth: currentWidth,
-          currentHeight: currentHeight,
-          displayScale: displayScale);
+      return _applyEffects(
+        image,
+        item,
+        currentWidth: currentWidth,
+        currentHeight: currentHeight,
+        displayScale: displayScale,
+      );
     }
 
     final appDirAsync = ref.watch(appDocumentsDirectoryProvider);
@@ -316,11 +340,14 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
             _loadUiImage(fullPath);
           }
           Widget image = Image.file(file, fit: BoxFit.cover, cacheWidth: 1000);
-          return _applyEffects(image, item,
-              currentWidth: currentWidth,
-              currentHeight: currentHeight,
-              displayScale: displayScale,
-              fullPath: fullPath);
+          return _applyEffects(
+            image,
+            item,
+            currentWidth: currentWidth,
+            currentHeight: currentHeight,
+            displayScale: displayScale,
+            fullPath: fullPath,
+          );
         }
         return const Center(
           child: Icon(Icons.broken_image, color: Colors.orange),
@@ -365,10 +392,26 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     if (item.isBlackAndWhite) {
       image = ColorFiltered(
         colorFilter: const ColorFilter.matrix([
-          0.299, 0.587, 0.114, 0, 0,
-          0.299, 0.587, 0.114, 0, 0,
-          0.299, 0.587, 0.114, 0, 0,
-          0,     0,     0,     1, 0,
+          0.299,
+          0.587,
+          0.114,
+          0,
+          0,
+          0.299,
+          0.587,
+          0.114,
+          0,
+          0,
+          0.299,
+          0.587,
+          0.114,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]),
         child: image,
       );
@@ -376,7 +419,11 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
 
     if (item.isBlurred) {
       image = ImageFiltered(
-        imageFilter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5, tileMode: TileMode.clamp),
+        imageFilter: ui.ImageFilter.blur(
+          sigmaX: 5,
+          sigmaY: 5,
+          tileMode: TileMode.clamp,
+        ),
         child: image,
       );
     }
