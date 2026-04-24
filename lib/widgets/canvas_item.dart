@@ -29,8 +29,9 @@ class CanvasItem extends ConsumerStatefulWidget {
 }
 
 class _CanvasItemState extends ConsumerState<CanvasItem> {
-  static const double _handlePadding = 15.0;
-
+  static const double _handlePadding = 40.0;
+  static const double _handleRadius = 8.0;
+  static const double _handleOffset = 11.0; // center offset outside corner
   // Drag State
   Offset? _dragStartLocalPosition;
   Offset? _currentDragOffset;
@@ -79,6 +80,7 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
   @override
   Widget build(BuildContext context) {
     final isSelected = ref.watch(selectedItemIdProvider) == widget.item.id;
+    final canvasScale = ref.watch(canvasScaleProvider);
     final displayScale = widget.item.scale * widget.additionalScale;
 
     // Aktuelle Werte (mit pending changes)
@@ -119,6 +121,7 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
               child: Transform.scale(
                 scaleX: widget.item.flipHorizontal ? -1.0 : 1.0,
                 child: Stack(
+                  clipBehavior: Clip.none,
                   children: [
                     // Image container
                     Container(
@@ -145,7 +148,7 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: Colors.blueAccent,
-                            width: scaledBorderWidth,
+                            width: 4,
                           ),
                           borderRadius: BorderRadius.circular(
                             scaledBorderRadius,
@@ -159,11 +162,9 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
                           currentWidth * displayScale,
                           currentHeight * displayScale,
                         ),
-                        painter: CornerHandlePainter(
-                          handleLength: scaledHandleLength,
-                          handleThickness: scaledHandleThickness,
-                          handleColor: const Color.fromARGB(255, 235, 235, 235),
-                          borderRadius: scaledBorderRadius,
+                        painter: CircleHandlePainter(
+                          radius: _handleRadius / canvasScale,
+                          offset: _handleOffset / canvasScale,
                         ),
                       ),
                   ],

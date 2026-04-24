@@ -25,10 +25,17 @@ class _InteractiveBoardCanvasState
   void initState() {
     super.initState();
     _transformationController = TransformationController();
+    _transformationController.addListener(_onTransformChanged);
+  }
+
+  void _onTransformChanged() {
+    final scale = _transformationController.value.getMaxScaleOnAxis();
+    ref.read(canvasScaleProvider.notifier).state = scale;
   }
 
   @override
   void dispose() {
+    _transformationController.removeListener(_onTransformChanged);
     _transformationController.dispose();
     super.dispose();
   }
