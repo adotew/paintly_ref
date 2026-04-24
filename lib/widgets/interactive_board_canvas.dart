@@ -69,9 +69,8 @@ class _InteractiveBoardCanvasState
               minScale: 0.1,
               maxScale: 4.0,
               constrained: false, // Important for infinite canvas feeling
-              // Disable canvas interaction when an item is selected
-              panEnabled: selectedItemId == null,
-              scaleEnabled: selectedItemId == null,
+              panEnabled: true,
+              scaleEnabled: true,
               child: Container(
                 width: 7000,
                 height: 7000,
