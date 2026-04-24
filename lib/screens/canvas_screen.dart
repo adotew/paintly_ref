@@ -56,33 +56,49 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         children: [
           InteractiveBoardCanvas(board: board),
 
-          // Back button — top left
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GlassTile(
-                theWidth: 48,
-                theHeight: 48,
-                onPressed: () => Navigator.pop(context),
-                theChild: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          // Back button — top left, fades when item selected
+          AnimatedOpacity(
+            opacity: selectedItemId == null ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: IgnorePointer(
+              ignoring: selectedItemId != null,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: GlassTile(
+                    theWidth: 48,
+                    theHeight: 48,
+                    onPressed: () => Navigator.pop(context),
+                    theChild: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
 
-          // Add image button — bottom right, hidden when item selected
-          if (selectedItemId == null)
-            Positioned(
-              right: 16,
-              bottom: 32,
-              child: SafeArea(
-                child: GlassTile(
-                  theWidth: 48.0,
-                  theHeight: 48.0,
-                  onPressed: () => _pickAndAddImage(context, ref, board),
-                  theChild: const Icon(Icons.add, color: Colors.white),
+          // Add image button — bottom right, fades when item selected
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: AnimatedOpacity(
+              opacity: selectedItemId == null ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: IgnorePointer(
+                ignoring: selectedItemId != null,
+                child: SafeArea(
+                  child: GlassTile(
+                    theWidth: 48.0,
+                    theHeight: 48.0,
+                    onPressed: () => _pickAndAddImage(context, ref, board),
+                    theChild: const Icon(Icons.add, color: Colors.white),
+                  ),
                 ),
               ),
             ),
+          ),
 
           // Image Toolbar - appears when an image is selected
           ImageToolbar(isVisible: selectedItemId != null, boardId: board.id),
