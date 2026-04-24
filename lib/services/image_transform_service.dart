@@ -43,30 +43,32 @@ class ImageTransformService {
     required double itemHeight,
     required double hitAreaSize,
   }) {
-    final hitArea = hitAreaSize;
+    final corners = <ResizeHandle, Offset>{
+      ResizeHandle.topLeft: const Offset(0, 0),
+      ResizeHandle.topRight: Offset(itemWidth, 0),
+      ResizeHandle.bottomLeft: Offset(0, itemHeight),
+      ResizeHandle.bottomRight: Offset(itemWidth, itemHeight),
+    };
 
-    // Top-Left
-    if (localPosition.dx < hitArea && localPosition.dy < hitArea) {
-      return ResizeHandle.topLeft;
+    ResizeHandle? bestHandle;
+    double bestDistanceSquared = double.infinity;
+
+    for (final entry in corners.entries) {
+      final corner = entry.value;
+      final dx = (localPosition.dx - corner.dx).abs();
+      final dy = (localPosition.dy - corner.dy).abs();
+
+      // Square hit area around each corner.
+      if (dx <= hitAreaSize && dy <= hitAreaSize) {
+        final distanceSquared = dx * dx + dy * dy;
+        if (distanceSquared < bestDistanceSquared) {
+          bestDistanceSquared = distanceSquared;
+          bestHandle = entry.key;
+        }
+      }
     }
 
-    // Top-Right
-    if (localPosition.dx > itemWidth - hitArea && localPosition.dy < hitArea) {
-      return ResizeHandle.topRight;
-    }
-
-    // Bottom-Left
-    if (localPosition.dx < hitArea && localPosition.dy > itemHeight - hitArea) {
-      return ResizeHandle.bottomLeft;
-    }
-
-    // Bottom-Right
-    if (localPosition.dx > itemWidth - hitArea &&
-        localPosition.dy > itemHeight - hitArea) {
-      return ResizeHandle.bottomRight;
-    }
-
-    return null;
+    return bestHandle;
   }
 
   /// Berechnet die neue Größe und Position nach einem Resize

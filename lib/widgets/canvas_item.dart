@@ -29,9 +29,6 @@ class CanvasItem extends ConsumerStatefulWidget {
 }
 
 class _CanvasItemState extends ConsumerState<CanvasItem> {
-  static const double _handlePadding = 40.0;
-  static const double _handleRadius = 8.0;
-  static const double _handleOffset = 11.0; // center offset outside corner
   // Drag State
   Offset? _dragStartLocalPosition;
   Offset? _currentDragOffset;
@@ -99,14 +96,13 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     final visualHeight = currentHeight * displayScale;
     final referenceSize = math.min(visualWidth, visualHeight);
 
-    final scaledBorderWidth = (referenceSize * 0.015).clamp(2.0, 5.0);
-    final scaledBorderRadius = (referenceSize * 0.07).clamp(8.0, 28.0);
-    final scaledHandleLength = (referenceSize * 0.09).clamp(10.0, 22.0);
-    final scaledHandleThickness = (referenceSize * 0.05).clamp(6.0, 12.0);
+    final scaledBorderRadius = 24 * widget.item.scale;
+
+    final handlePadding = CornerHandleMetrics.handlePadding(canvasScale);
 
     return Positioned(
-      left: 3500 + displayX - _handlePadding,
-      top: 3500 + displayY - _handlePadding,
+      left: 3500 + displayX - handlePadding,
+      top: 3500 + displayY - handlePadding,
       child: RepaintBoundary(
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
@@ -115,7 +111,7 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
           onScaleUpdate: isSelected ? _onScaleUpdate : null,
           onScaleEnd: isSelected ? _onScaleEnd : null,
           child: Padding(
-            padding: const EdgeInsets.all(_handlePadding),
+            padding: EdgeInsets.all(handlePadding),
             child: Transform.rotate(
               angle: widget.item.rotation,
               child: Transform.scale(
@@ -163,8 +159,12 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
                           currentHeight * displayScale,
                         ),
                         painter: CircleHandlePainter(
-                          radius: _handleRadius / canvasScale,
-                          offset: _handleOffset / canvasScale,
+                          radius: CornerHandleMetrics.radiusForCanvasScale(
+                            canvasScale,
+                          ),
+                          offset: CornerHandleMetrics.offsetForCanvasScale(
+                            canvasScale,
+                          ),
                         ),
                       ),
                   ],
@@ -181,11 +181,13 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     final displayScale = widget.item.scale * widget.additionalScale;
     final currentWidth = widget.item.width * displayScale;
     final currentHeight = widget.item.height * displayScale;
-    final hitAreaSize = ImageTransformService.getHitAreaSize(displayScale);
+    final canvasScale = ref.read(canvasScaleProvider);
+    final hitAreaSize = CornerHandleMetrics.hitAreaSize(canvasScale);
+    final handlePadding = CornerHandleMetrics.handlePadding(canvasScale);
 
     // Strip padding offset so hit-test coordinates are relative to image origin
     final adjustedPosition =
-        details.localFocalPoint - const Offset(_handlePadding, _handlePadding);
+        details.localFocalPoint - Offset(handlePadding, handlePadding);
 
     final handle = ImageTransformService.hitTestHandle(
       localPosition: adjustedPosition,
