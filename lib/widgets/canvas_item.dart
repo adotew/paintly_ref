@@ -89,14 +89,12 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     final displayX = currentX + (_currentDragOffset?.dx ?? 0.0);
     final displayY = currentY + (_currentDragOffset?.dy ?? 0.0);
 
-    // Derive selection chrome dimensions from the item's actual visible
-    // size so border + handles stay visually balanced as the item is
-    // resized (clamped so they neither vanish nor dominate at extremes).
-    final visualWidth = currentWidth * displayScale;
-    final visualHeight = currentHeight * displayScale;
-    final referenceSize = math.min(visualWidth, visualHeight);
-
-    final scaledBorderRadius = 24 * widget.item.scale;
+    // Keep a constant corner proportion relative to the rendered image size.
+    final visualReference = math.min(
+      currentWidth * displayScale,
+      currentHeight * displayScale,
+    );
+    final scaledBorderRadius = visualReference * 0.07;
 
     final handlePadding = CornerHandleMetrics.handlePadding(canvasScale);
 
