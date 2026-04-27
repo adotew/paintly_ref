@@ -77,10 +77,20 @@ class BoardList extends _$BoardList {
     if (itemIndex == -1) return;
 
     final originalItem = board.items[itemIndex];
-    // Neues Item mit leichtem Offset erstellen
-    final duplicatedItem = originalItem.copyWith(
+    final duplicatedItem = BoardItem(
+      imageSource: originalItem.imageSource,
       x: originalItem.x + 20,
       y: originalItem.y + 20,
+      scale: originalItem.scale,
+      rotation: originalItem.rotation,
+      width: originalItem.width,
+      height: originalItem.height,
+      flipHorizontal: originalItem.flipHorizontal,
+      isBlackAndWhite: originalItem.isBlackAndWhite,
+      isBlurred: originalItem.isBlurred,
+      isPosterized: originalItem.isPosterized,
+      posterizationLevels: originalItem.posterizationLevels,
+      blurSigma: originalItem.blurSigma,
     );
 
     final updatedItems = List<BoardItem>.from(board.items)..add(duplicatedItem);
