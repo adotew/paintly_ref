@@ -91,8 +91,8 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     final clampedDisplay = ImageTransformService.clampToCanvas(
       x: rawDisplayX,
       y: rawDisplayY,
-      width: currentWidth,
-      height: currentHeight,
+      width: currentWidth * displayScale,
+      height: currentHeight * displayScale,
     );
     final displayX = clampedDisplay.dx;
     final displayY = clampedDisplay.dy;
@@ -286,11 +286,12 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
         startY: widget.item.y,
         dragDelta: _currentDragOffset ?? Offset.zero,
       );
+      final itemDisplayScale = widget.item.scale * widget.additionalScale;
       final newPos = ImageTransformService.clampToCanvas(
         x: rawPos.dx,
         y: rawPos.dy,
-        width: widget.item.width,
-        height: widget.item.height,
+        width: widget.item.width * itemDisplayScale,
+        height: widget.item.height * itemDisplayScale,
       );
 
       _updateBoardItem(x: newPos.dx, y: newPos.dy);

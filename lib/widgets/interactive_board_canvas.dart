@@ -72,7 +72,6 @@ class _InteractiveBoardCanvasState
             InteractiveViewer(
               transformationController: _transformationController,
               // Limit the panning area so it's not infinite
-              boundaryMargin: const EdgeInsets.all(500),
               minScale: 0.1,
               maxScale: 4.0,
               constrained: false, // Important for infinite canvas feeling
