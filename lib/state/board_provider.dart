@@ -53,6 +53,11 @@ class BoardList extends _$BoardList {
     ];
   }
 
+  Future<void> renameBoard(String id, String newName) async {
+    final board = state.firstWhere((b) => b.id == id);
+    await updateBoard(board.copyWith(name: newName));
+  }
+
   Future<void> deleteBoard(String id) async {
     final storageService = ref.read(storageServiceProvider);
     await storageService.deleteBoard(id);

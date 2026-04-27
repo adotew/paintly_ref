@@ -105,7 +105,7 @@ class _BoardCard extends ConsumerWidget {
           );
         },
         onLongPress: () {
-          _showDeleteDialog(context, ref, board);
+          _showOptionsMenu(context, ref, board);
         },
         child: Stack(
           fit: StackFit.expand,
@@ -169,6 +169,68 @@ class _BoardCard extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showOptionsMenu(BuildContext context, WidgetRef ref, Board board) {
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        children: [
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(context);
+              _showRenameDialog(context, ref, board);
+            },
+            child: const Text('Rename'),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(context);
+              _showDeleteDialog(context, ref, board);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRenameDialog(BuildContext context, WidgetRef ref, Board board) {
+    final controller = TextEditingController(text: board.name);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename Board'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Board name'),
+          onSubmitted: (value) {
+            final name = value.trim();
+            if (name.isNotEmpty) {
+              ref.read(boardListProvider.notifier).renameBoard(board.id, name);
+            }
+            Navigator.pop(context);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.isNotEmpty) {
+                ref.read(boardListProvider.notifier).renameBoard(board.id, name);
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
     );
   }
