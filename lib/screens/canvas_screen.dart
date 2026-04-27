@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board.dart';
@@ -19,6 +20,29 @@ class CanvasScreen extends ConsumerStatefulWidget {
 }
 
 class _CanvasScreenState extends ConsumerState<CanvasScreen> {
+  bool _uiVisible = true;
+  Timer? _hideTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetTimer();
+  }
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  void _resetTimer() {
+    _hideTimer?.cancel();
+    if (!_uiVisible) setState(() => _uiVisible = true);
+    _hideTimer = Timer(const Duration(seconds: 7), () {
+      if (mounted) setState(() => _uiVisible = false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final board = ref
@@ -52,16 +76,18 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     final selectedItemId = ref.watch(selectedItemIdProvider);
 
     return Scaffold(
-      body: Stack(
+      body: Listener(
+        onPointerDown: (_) => _resetTimer(),
+        child: Stack(
         children: [
           InteractiveBoardCanvas(board: board),
 
-          // Back button — top left, fades when item selected
+          // Back button — top left, fades when item selected or UI hidden
           AnimatedOpacity(
-            opacity: selectedItemId == null ? 1.0 : 0.0,
+            opacity: selectedItemId == null && _uiVisible ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 200),
             child: IgnorePointer(
-              ignoring: selectedItemId != null,
+              ignoring: selectedItemId != null || !_uiVisible,
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -79,15 +105,15 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
             ),
           ),
 
-          // Add image button — bottom right, fades when item selected
+          // Add image button — bottom right, fades when item selected or UI hidden
           Positioned(
             right: 16,
             bottom: 16,
             child: AnimatedOpacity(
-              opacity: selectedItemId == null ? 1.0 : 0.0,
+              opacity: selectedItemId == null && _uiVisible ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 200),
               child: IgnorePointer(
-                ignoring: selectedItemId != null,
+                ignoring: selectedItemId != null || !_uiVisible,
                 child: SafeArea(
                   child: GlassTile(
                     theWidth: 48.0,
@@ -103,6 +129,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
           // Image Toolbar - appears when an image is selected
           ImageToolbar(isVisible: selectedItemId != null, boardId: board.id),
         ],
+        ),
       ),
     );
   }
