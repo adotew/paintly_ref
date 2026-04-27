@@ -53,6 +53,19 @@ class ImageToolbar extends ConsumerWidget {
                     child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Blur slider — expands when blur is active
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOut,
+                    child: item != null && item.isBlurred
+                        ? _BlurSlider(
+                            sigma: item.blurSigma,
+                            onChanged: (v) => ref
+                                .read(boardListProvider.notifier)
+                                .setBlurSigma(boardId, item!.id, v),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
                   // Posterization slider — expands when posterize is active
                   AnimatedSize(
                     duration: const Duration(milliseconds: 200),
@@ -246,6 +259,53 @@ class _PosterizationSlider extends StatelessWidget {
                 min: 0,
                 max: 8,
                 divisions: 8,
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BlurSlider extends StatelessWidget {
+  final double sigma;
+  final ValueChanged<double> onChanged;
+
+  const _BlurSlider({
+    required this.sigma,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Blur: ${sigma.round()}',
+            style: TextStyle(color: Colors.grey[300], fontSize: 12),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 160,
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 2,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                activeTrackColor: Colors.white,
+                inactiveTrackColor: Colors.grey[700],
+                thumbColor: Colors.white,
+                overlayColor: Colors.white.withValues(alpha: 0.15),
+              ),
+              child: Slider(
+                value: sigma,
+                min: 0.5,
+                max: 20.0,
                 onChanged: onChanged,
               ),
             ),

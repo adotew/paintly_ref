@@ -134,6 +134,16 @@ class BoardList extends _$BoardList {
     await updateBoard(board.copyWith(items: updatedItems));
   }
 
+  Future<void> setBlurSigma(String boardId, String itemId, double sigma) async {
+    final board = state.firstWhere((b) => b.id == boardId);
+    final itemIndex = board.items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) return;
+    final item = board.items[itemIndex];
+    final updatedItems = List<BoardItem>.from(board.items);
+    updatedItems[itemIndex] = item.copyWith(blurSigma: sigma);
+    await updateBoard(board.copyWith(items: updatedItems));
+  }
+
   Future<void> setPosterizationLevels(String boardId, String itemId, double levels) async {
     final board = state.firstWhere((b) => b.id == boardId);
     final itemIndex = board.items.indexWhere((item) => item.id == itemId);

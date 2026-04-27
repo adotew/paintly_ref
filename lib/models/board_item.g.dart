@@ -30,13 +30,14 @@ class BoardItemAdapter extends TypeAdapter<BoardItem> {
       isBlurred: fields[10] as bool? ?? false,
       isPosterized: fields[11] as bool? ?? false,
       posterizationLevels: fields[12] as double? ?? 0.0,
+      blurSigma: fields[13] as double? ?? 5.0,
     );
   }
 
   @override
   void write(BinaryWriter writer, BoardItem obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -62,7 +63,9 @@ class BoardItemAdapter extends TypeAdapter<BoardItem> {
       ..writeByte(11)
       ..write(obj.isPosterized)
       ..writeByte(12)
-      ..write(obj.posterizationLevels);
+      ..write(obj.posterizationLevels)
+      ..writeByte(13)
+      ..write(obj.blurSigma);
   }
 
   @override

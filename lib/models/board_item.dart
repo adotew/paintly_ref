@@ -44,6 +44,9 @@ class BoardItem {
   @HiveField(12)
   final double posterizationLevels;
 
+  @HiveField(13)
+  final double blurSigma;
+
   BoardItem({
     String? id,
     required this.imageSource,
@@ -58,6 +61,7 @@ class BoardItem {
     this.isBlurred = false,
     this.isPosterized = false,
     this.posterizationLevels = 0.0,
+    this.blurSigma = 5.0,
   }) : id = id ?? const Uuid().v4();
 
   BoardItem copyWith({
@@ -73,6 +77,7 @@ class BoardItem {
     bool? isBlurred,
     bool? isPosterized,
     double? posterizationLevels,
+    double? blurSigma,
   }) {
     return BoardItem(
       id: id,
@@ -88,6 +93,7 @@ class BoardItem {
       isBlurred: isBlurred ?? this.isBlurred,
       isPosterized: isPosterized ?? this.isPosterized,
       posterizationLevels: posterizationLevels ?? this.posterizationLevels,
+      blurSigma: blurSigma ?? this.blurSigma,
     );
   }
 }

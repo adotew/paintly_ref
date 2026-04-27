@@ -421,8 +421,8 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     if (item.isBlurred) {
       image = ImageFiltered(
         imageFilter: ui.ImageFilter.blur(
-          sigmaX: 5,
-          sigmaY: 5,
+          sigmaX: item.blurSigma,
+          sigmaY: item.blurSigma,
           tileMode: TileMode.clamp,
         ),
         child: image,
