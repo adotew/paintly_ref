@@ -86,8 +86,16 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
     final currentWidth = _currentResize?.width ?? widget.item.width;
     final currentHeight = _currentResize?.height ?? widget.item.height;
 
-    final displayX = currentX + (_currentDragOffset?.dx ?? 0.0);
-    final displayY = currentY + (_currentDragOffset?.dy ?? 0.0);
+    final rawDisplayX = currentX + (_currentDragOffset?.dx ?? 0.0);
+    final rawDisplayY = currentY + (_currentDragOffset?.dy ?? 0.0);
+    final clampedDisplay = ImageTransformService.clampToCanvas(
+      x: rawDisplayX,
+      y: rawDisplayY,
+      width: currentWidth,
+      height: currentHeight,
+    );
+    final displayX = clampedDisplay.dx;
+    final displayY = clampedDisplay.dy;
 
     // Keep a constant corner proportion relative to the rendered image size.
     final visualReference = math.min(
@@ -273,10 +281,16 @@ class _CanvasItemState extends ConsumerState<CanvasItem> {
       });
     } else if (_dragStartLocalPosition != null) {
       // Drag abschließen - Board updaten
-      final newPos = ImageTransformService.calculateDragPosition(
+      final rawPos = ImageTransformService.calculateDragPosition(
         startX: widget.item.x,
         startY: widget.item.y,
         dragDelta: _currentDragOffset ?? Offset.zero,
+      );
+      final newPos = ImageTransformService.clampToCanvas(
+        x: rawPos.dx,
+        y: rawPos.dy,
+        width: widget.item.width,
+        height: widget.item.height,
       );
 
       _updateBoardItem(x: newPos.dx, y: newPos.dy);

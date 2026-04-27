@@ -26,6 +26,8 @@ class ImageTransformService {
   /// Mindestgröße für Items beim Resize
   static const double minSize = 50.0;
 
+  static const double canvasHalfSize = 3500.0;
+
   /// Berechnet die neue Position nach einem Drag
   static Offset calculateDragPosition({
     required double startX,
@@ -33,6 +35,18 @@ class ImageTransformService {
     required Offset dragDelta,
   }) {
     return Offset(startX + dragDelta.dx, startY + dragDelta.dy);
+  }
+
+  /// Klemmt eine Position so, dass das Item vollständig im Canvas bleibt
+  static Offset clampToCanvas({
+    required double x,
+    required double y,
+    required double width,
+    required double height,
+  }) {
+    final clampedX = x.clamp(-canvasHalfSize, canvasHalfSize - width);
+    final clampedY = y.clamp(-canvasHalfSize, canvasHalfSize - height);
+    return Offset(clampedX, clampedY);
   }
 
   /// Berechnet welcher ResizeHandle an einer Position getroffen wurde
