@@ -113,8 +113,15 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     Board board,
   ) async {
     try {
+      final scale = ref.read(canvasScaleProvider);
+      final translation = ref.read(canvasTranslationProvider);
+      final screenSize = MediaQuery.of(context).size;
+      final cx = (screenSize.width / 2 - translation.dx) / scale;
+      final cy = (screenSize.height / 2 - translation.dy) / scale;
+      final center = Offset(cx - 3500 - 150, cy - 3500 - 150);
+
       final imageService = ImageService();
-      final newItems = await imageService.pickAndProcessImages();
+      final newItems = await imageService.pickAndProcessImages(center: center);
 
       if (newItems.isNotEmpty) {
         final updatedItems = List<BoardItem>.from(board.items)

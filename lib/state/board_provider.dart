@@ -154,6 +154,22 @@ class BoardList extends _$BoardList {
     await updateBoard(board.copyWith(items: updatedItems));
   }
 
+  Future<void> saveViewport(
+    String boardId,
+    double tx,
+    double ty,
+    double scale,
+  ) async {
+    final board = state.firstWhere((b) => b.id == boardId);
+    await updateBoard(
+      board.copyWith(
+        viewportTranslateX: tx,
+        viewportTranslateY: ty,
+        viewportScale: scale,
+      ),
+    );
+  }
+
   Future<void> setPosterizationLevels(String boardId, String itemId, double levels) async {
     final board = state.firstWhere((b) => b.id == boardId);
     final itemIndex = board.items.indexWhere((item) => item.id == itemId);

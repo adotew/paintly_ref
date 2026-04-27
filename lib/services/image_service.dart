@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter/painting.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -10,7 +10,9 @@ class ImageService {
   final ImagePicker _picker = ImagePicker();
   final Uuid _uuid = const Uuid();
 
-  Future<List<BoardItem>> pickAndProcessImages() async {
+  Future<List<BoardItem>> pickAndProcessImages({
+    Offset center = Offset.zero,
+  }) async {
     try {
       final List<XFile> images = await _picker.pickMultiImage();
 
@@ -65,8 +67,8 @@ class ImageService {
 
         final newItem = BoardItem(
           imageSource: fileName,
-          x: offset,
-          y: offset,
+          x: center.dx + offset,
+          y: center.dy + offset,
           width: w,
           height: h,
         );

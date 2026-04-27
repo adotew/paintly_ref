@@ -22,13 +22,16 @@ class BoardAdapter extends TypeAdapter<Board> {
       items: (fields[2] as List?)?.cast<BoardItem>(),
       createdAt: fields[3] as DateTime?,
       lastModified: fields[4] as DateTime?,
+      viewportTranslateX: fields[5] as double?,
+      viewportTranslateY: fields[6] as double?,
+      viewportScale: fields[7] as double?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Board obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +41,13 @@ class BoardAdapter extends TypeAdapter<Board> {
       ..writeByte(3)
       ..write(obj.createdAt)
       ..writeByte(4)
-      ..write(obj.lastModified);
+      ..write(obj.lastModified)
+      ..writeByte(5)
+      ..write(obj.viewportTranslateX)
+      ..writeByte(6)
+      ..write(obj.viewportTranslateY)
+      ..writeByte(7)
+      ..write(obj.viewportScale);
   }
 
   @override

@@ -21,12 +21,24 @@ class Board {
   @HiveField(4)
   final DateTime lastModified;
 
+  @HiveField(5)
+  final double? viewportTranslateX;
+
+  @HiveField(6)
+  final double? viewportTranslateY;
+
+  @HiveField(7)
+  final double? viewportScale;
+
   Board({
     String? id,
     required this.name,
     List<BoardItem>? items,
     DateTime? createdAt,
     DateTime? lastModified,
+    this.viewportTranslateX,
+    this.viewportTranslateY,
+    this.viewportScale,
   }) : id = id ?? const Uuid().v4(),
        items = items ?? const [],
        createdAt = createdAt ?? DateTime.now(),
@@ -36,6 +48,9 @@ class Board {
     String? name,
     List<BoardItem>? items,
     DateTime? lastModified,
+    double? viewportTranslateX,
+    double? viewportTranslateY,
+    double? viewportScale,
   }) {
     return Board(
       id: id,
@@ -43,6 +58,9 @@ class Board {
       items: items ?? this.items,
       createdAt: createdAt,
       lastModified: lastModified ?? DateTime.now(),
+      viewportTranslateX: viewportTranslateX ?? this.viewportTranslateX,
+      viewportTranslateY: viewportTranslateY ?? this.viewportTranslateY,
+      viewportScale: viewportScale ?? this.viewportScale,
     );
   }
 }

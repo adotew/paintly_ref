@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board.dart';
@@ -20,6 +21,7 @@ class InteractiveBoardCanvas extends ConsumerStatefulWidget {
 class _InteractiveBoardCanvasState
     extends ConsumerState<InteractiveBoardCanvas> {
   late TransformationController _transformationController;
+  Timer? _saveTimer;
 
   @override
   void initState() {
@@ -29,12 +31,24 @@ class _InteractiveBoardCanvasState
   }
 
   void _onTransformChanged() {
-    final scale = _transformationController.value.getMaxScaleOnAxis();
-    ref.read(canvasScaleProvider.notifier).state = scale;
+    final matrix = _transformationController.value;
+    ref.read(canvasScaleProvider.notifier).state = matrix.getMaxScaleOnAxis();
+    ref.read(canvasTranslationProvider.notifier).state =
+        Offset(matrix[12], matrix[13]);
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(milliseconds: 800), () {
+      ref.read(boardListProvider.notifier).saveViewport(
+        widget.board.id,
+        matrix[12],
+        matrix[13],
+        matrix.getMaxScaleOnAxis(),
+      );
+    });
   }
 
   @override
   void dispose() {
+    _saveTimer?.cancel();
     _transformationController.removeListener(_onTransformChanged);
     _transformationController.dispose();
     super.dispose();
@@ -46,17 +60,27 @@ class _InteractiveBoardCanvasState
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Center the canvas initially
+        // Restore saved viewport or center the canvas initially
         if (_transformationController.value.isIdentity()) {
           final viewportWidth = constraints.maxWidth;
           final viewportHeight = constraints.maxHeight;
-          final canvasSize = 7000.0;
+          const canvasSize = 7000.0;
 
-          final x = -canvasSize / 2 + viewportWidth / 2;
-          final y = -canvasSize / 2 + viewportHeight / 2;
-
-          _transformationController.value = Matrix4.identity()
-            ..translateByDouble(x, y, 0.0, 1.0);
+          if (widget.board.viewportTranslateX != null) {
+            final scale = widget.board.viewportScale!;
+            final m = Matrix4.identity();
+            m.setEntry(0, 0, scale);
+            m.setEntry(1, 1, scale);
+            m.setEntry(2, 2, scale);
+            m[12] = widget.board.viewportTranslateX!;
+            m[13] = widget.board.viewportTranslateY!;
+            _transformationController.value = m;
+          } else {
+            final x = -canvasSize / 2 + viewportWidth / 2;
+            final y = -canvasSize / 2 + viewportHeight / 2;
+            _transformationController.value = Matrix4.identity()
+              ..translateByDouble(x, y, 0.0, 1.0);
+          }
         }
 
         return Stack(
